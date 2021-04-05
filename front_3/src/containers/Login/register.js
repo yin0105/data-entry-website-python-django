@@ -1,8 +1,9 @@
 import React, { Component } from "react";
 import {Button, Grid, Row, Col, FormGroup, FormLabel, FormControl, Form} from "react-bootstrap";
-import bgImage from "../../assets/img/full-screen-image.jpg";
+import { Link } from "react-router-dom"
+import bgImage from "../../assets/img/full-screen-image_2.jpg";
 
-export default class Login extends Component {
+export default class Register extends Component {
     render() {
         return (
             <div className="auth-wrapper" style={{ backgroundImage: "url(" + bgImage + ")", backgroundSize: "cover", backgroundPosition: "center center"}}>
@@ -32,7 +33,8 @@ export default class Login extends Component {
                             <Button variant="success" className="w-100" type="submit">Sign up</Button>
                         </FormGroup>
                         <p className="forgot-password text-center pt-0">
-                            Already have an account?  <a href="/sign-in">Sign in</a>
+                            Already have an account?  <Link to="/login">Sign in</Link>
+                            {/* <a href="/sign-in">Sign in</a> */}
                         </p>
                         
                     </Form>

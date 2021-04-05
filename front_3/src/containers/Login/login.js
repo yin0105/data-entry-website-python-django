@@ -1,6 +1,7 @@
 import React, { Component } from "react";
-import {Button, Grid, Row, Col, FormGroup, FormLabel, FormControl, Form} from "react-bootstrap";
-import bgImage from "../../assets/img/full-screen-image.jpg";
+import { Button, Grid, Row, Col, FormGroup, FormLabel, FormControl, Form } from "react-bootstrap";
+import { Link } from "react-router-dom"
+import bgImage from "../../assets/img/full-screen-image_2.jpg";
 
 export default class Login extends Component {
     render() {
@@ -35,7 +36,7 @@ export default class Login extends Component {
                             <Button variant="success" className="w-100" type="submit">Sign in</Button>
                         </FormGroup>
                         <p className="forgot-password text-center pt-0">
-                            Don't have an account?  <a href="/sign-up">Sign up</a>
+                            Don't have an account?  <Link to="/register">Sign up</Link>
                         </p>
                         
                     </Form>
