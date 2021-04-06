@@ -1,12 +1,13 @@
 import React, { Component } from "react";
-import {Button, Grid, Row, Col, FormGroup, FormLabel, FormControl, Form} from "react-bootstrap";
+import { Grid, Row, Col, FormGroup, FormLabel, FormControl, Form} from "react-bootstrap";
 import { Link } from "react-router-dom"
-import bgImage from "../../assets/img/full-screen-image_2.jpg";
+import Button from "components/CustomButton/CustomButton.jsx";
+import bgImage from "../../assets/img/full-screen-image-2.jpg";
 
 export default class Register extends Component {
     render() {
         return (
-            <div className="auth-wrapper" style={{ backgroundImage: "url(" + bgImage + ")", backgroundSize: "cover", backgroundPosition: "center center"}}>
+            <div className="auth-wrapper vh-100" style={{ backgroundImage: "url(" + bgImage + ")", backgroundSize: "cover", backgroundPosition: "center center"}}>
                 <div className="auth-inner" data-image={bgImage}>
                     <Form onSubmit={this.handleLogin}>
                         <h3>Sign Up</h3>
@@ -23,17 +24,25 @@ export default class Register extends Component {
                                        autoComplete="off" onChange={this.handleChangeInput}/>
                         </FormGroup>
 
-                        <FormGroup className="mb-5">
+                        <FormGroup>
                             <FormLabel>Password</FormLabel>
                             <FormControl placeholder="Password" name="password" type="password" autoComplete="off"
                                        onChange={this.handleChangeInput}/>
                         </FormGroup>
 
+                        <FormGroup className="mb-5">
+                            <FormLabel>Password Confirm</FormLabel>
+                            <FormControl placeholder="Password" name="password_confirm" type="password" autoComplete="off"
+                                       onChange={this.handleChangeInput}/>
+                        </FormGroup>
+
                         <FormGroup className="d-flex">
-                            <Button variant="success" className="w-100" type="submit">Sign up</Button>
+                            <div className="mx-auto">
+                                <Button variant="success" fill wd>Sign up</Button>
+                            </div>
                         </FormGroup>
                         <p className="forgot-password text-center pt-0">
-                            Already have an account?  <Link to="/login">Sign in</Link>
+                            Already have an account?  <Link to="/auth/login">Sign in</Link>
                             {/* <a href="/sign-in">Sign in</a> */}
                         </p>
                         
