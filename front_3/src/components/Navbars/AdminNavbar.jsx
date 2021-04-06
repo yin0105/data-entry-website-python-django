@@ -51,7 +51,7 @@ class AdminNavbar extends Component {
   render() {
     return (
       <Navbar fluid className={this.props.navbar ? "navbar-fixed" : ""}>
-        <div className="navbar-minimize">
+        {/* <div className="navbar-minimize">
           <button
             id="minimizeSidebar"
             className="btn btn-default btn-fill btn-round btn-icon"
@@ -63,18 +63,16 @@ class AdminNavbar extends Component {
         </div>
         <Navbar.Header>
           <Navbar.Brand>
-            {/* Here we create navbar brand, based on route name */}
             <a href="#pablo">{this.getActiveRoute(routes)}</a>
           </Navbar.Brand>
           <Navbar.Toggle onClick={this.mobileSidebarToggle} />
         </Navbar.Header>
 
-        {/* Here we import the links that appear in navbar */}
         {window.innerWidth > 992 ? (
           <Navbar.Collapse>
             <AdminNavbarLinks />
           </Navbar.Collapse>
-        ) : null}
+        ) : null} */}
       </Navbar>
     );
   }

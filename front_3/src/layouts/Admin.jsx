@@ -184,14 +184,14 @@ class Dashboard extends Component {
           }
           ref="mainPanel"
         >
-          <AdminNavbar
+          {/* <AdminNavbar
             {...this.props}
             handleMiniClick={this.handleMiniClick}
             navbar={this.state.navbar}
-          />
+          /> */}
           <Switch>{this.getRoutes(routes)}</Switch>
-          <Footer fluid />
-          <FixedPlugin
+          {/* <Footer fluid /> */}
+          {/* <FixedPlugin
             handleImageClick={this.handleImageClick}
             handleColorClick={this.handleColorClick}
             handleHasImage={this.handleHasImage}
@@ -202,7 +202,7 @@ class Dashboard extends Component {
             mini={this.state["mini"]}
             handleFixedClick={this.handleFixedClick}
             fixedClasses={this.state.fixedClasses}
-          />
+          /> */}
         </div>
       </div>
     );

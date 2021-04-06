@@ -44,33 +44,33 @@ var routes = [
   {
     path: "/dashboard",
     layout: "/admin",
-    name: "Login",
+    name: "Dashboard",
     icon: "pe-7s-graph",
     component: Register
   },
-  // {
-  //   collapse: true,
-  //   path: "/components",
-  //   name: "Components",
-  //   state: "Register",
-  //   icon: "pe-7s-plugin",
-  //   views: [
-  //     {
-  //       path: "/buttons",
-  //       layout: "/admin",
-  //       name: "Register",
-  //       mini: "B",
-  //       component: Register
-  //     },
-  //     {
-  //       path: "/grid-system",
-  //       layout: "/admin",
-  //       name: "Grid System",
-  //       mini: "GS",
-  //       component: Register
-  //     }
-  //   ]
-  // },  
+  {
+    collapse: true,
+    path: "/collections",
+    name: "Collections",
+    state: "Register",
+    icon: "pe-7s-plugin",
+    views: [
+      {
+        path: "/add_collection",
+        layout: "/admin",
+        name: "Add Collection",
+        mini: "B",
+        component: Register
+      },
+      {
+        path: "/collection_list",
+        layout: "/admin",
+        name: "Collection List",
+        mini: "GS",
+        component: Register
+      }
+    ]
+  },  
   {
     path: "/login",
     layout: "/auth",
