@@ -36,7 +36,7 @@ import img3 from "assets/img/blog-3.jpg";
 import img4 from "assets/img/blog-4.jpg";
 import img5 from "assets/img/blog-5.jpg";
 
-class CollectionList extends Component {
+class ScheduleList extends Component {
   render() {
     const view = <Tooltip id="view">View Profile</Tooltip>;
     const edit = <Tooltip id="edit">Edit Profile</Tooltip>;
@@ -88,33 +88,46 @@ class CollectionList extends Component {
           <Row>
             <Col md={{ span: 6, offset: 3 }} sm={{ span: 8, offset: 2 }}>
               <Card
-                title="Collections List"
+                title="Schedules List"
                 category=""
                 tableFullWidth
                 content={
                   <Table responsive>
                     <thead>
                       <tr>
-                        <th className="text-center">Collection Name</th>
+                        <th className="text-center">Schedule Name</th>
                         <th className="text-center">Action</th>                        
+                        <th className="text-center">Active</th>                        
                       </tr>
                     </thead>
                     <tbody>
                       <tr>
                         <td>Andrew Mike</td>
                         {actions}
+                        <td className="text-right">
+                          <Switch onText="" offText="" defaultValue={false} />
+                        </td>
                       </tr>
                       <tr>
                         <td>John Doe</td>
                         {actions}
+                        <td className="text-right">
+                          <Switch onText="" offText="" defaultValue={false} />
+                        </td>
                       </tr>
                       <tr>
                         <td>Alex Mike</td>
                         {actions}
+                        <td className="text-right">
+                          <Switch onText="" offText="" defaultValue={false} />
+                        </td>
                       </tr>
                       <tr>
                         <td>Mike Monday</td>
                         {actions}
+                        <td className="text-right">
+                          <Switch onText="" offText="" defaultValue={false} />
+                        </td>
                       </tr>
                     </tbody>
                   </Table>
@@ -128,4 +141,4 @@ class CollectionList extends Component {
   }
 }
 
-export default CollectionList;
+export default ScheduleList;

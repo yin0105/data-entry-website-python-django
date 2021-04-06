@@ -38,7 +38,8 @@ import UserPage from "views/Pages/UserPage.jsx";
 import LoginPage from "views/Pages/LoginPage.jsx";
 import RegisterPage from "views/Pages/RegisterPage.jsx";
 import LockScreenPage from "views/Pages/LockScreenPage.jsx";
-import CollectionList from "views/Collections/CollectionList"
+import CollectionList from "views/Collections/CollectionList";
+import ScheduleList from "views/Schedules/ScheduleList";
 
 var routes = [
   {
@@ -90,7 +91,7 @@ var routes = [
         layout: "/admin",
         name: "Schedule List",
         mini: "EF",
-        component: ExtendedForms
+        component: ScheduleList
       },
     ]
   },
