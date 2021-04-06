@@ -15,84 +15,62 @@
 
 */
 import React, { Component } from "react";
-import { Container, Row, Col, Media, FormControl, FormGroup } from "react-bootstrap";
-
+import {
+  Container,
+  Row,
+  Col,
+  FormGroup,
+  FormLabel,
+  FormControl,
+  FormText,
+} from "react-bootstrap";
+import { Link } from "react-router-dom"
 import Card from "components/Card/Card.jsx";
 
 import Button from "components/CustomButton/CustomButton.jsx";
+import Checkbox from "components/CustomCheckbox/CustomCheckbox.jsx";
 
-class RegisterPage extends Component {
+class LoginPage extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      cardHidden: true
+    };
+  }
+  componentDidMount() {
+    setTimeout(
+      function() {
+        this.setState({ cardHidden: false });
+      }.bind(this),
+      700
+    );
+  }
   render() {
     return (
       <Container>
         <Row>
-          <Col md={8} mdOffset={2}>
-            <div className="header-text">
-              <h2>Light Bootstrap Dashboard PRO</h2>
-              <h4>Register for free and experience the dashboard today</h4>
-              <hr />
-            </div>
-          </Col>
-          <Col md={4} mdOffset={2}>
-            <Media>
-              <Media.Left>
-                <div className="icon">
-                  <i className="pe-7s-user" />
-                </div>
-              </Media.Left>
-              <Media.Body>
-                <Media.Heading>Free Account</Media.Heading>
-                Here you can write a feature description for your dashboard, let
-                the users know what is the value that you give them.
-              </Media.Body>
-            </Media>
-            <Media>
-              <Media.Left>
-                <div className="icon">
-                  <i className="pe-7s-graph1" />
-                </div>
-              </Media.Left>
-              <Media.Body>
-                <Media.Heading>Awesome Performances</Media.Heading>
-                Here you can write a feature description for your dashboard, let
-                the users know what is the value that you give them.
-              </Media.Body>
-            </Media>
-            <Media>
-              <Media.Left>
-                <div className="icon">
-                  <i className="pe-7s-headphones" />
-                </div>
-              </Media.Left>
-              <Media.Body>
-                <Media.Heading>Global Support</Media.Heading>
-                Here you can write a feature description for your dashboard, let
-                the users know what is the value that you give them.
-              </Media.Body>
-            </Media>
-          </Col>
-          <Col md={4}>
+          <Col md={{ span: 4, offset: 4 }} sm={{ span: 6, offset: 3 }}>
             <form>
               <Card
-                plain
+                hidden={this.state.cardHidden}
+                textCenter
+                title="Register"
                 content={
                   <div>
                     <FormGroup>
-                      <FormControl type="text" placeholder="Your First Name" />
+                      <FormLabel>User Name</FormLabel>
+                      <FormControl placeholder="Your Full Name" type="text" />
                     </FormGroup>
                     <FormGroup>
-                      <FormControl type="text" placeholder="Your Last Name" />
+                      <FormLabel>Email address</FormLabel>
+                      <FormControl placeholder="Enter email" type="email" />
                     </FormGroup>
                     <FormGroup>
-                      <FormControl type="text" placeholder="Company" />
+                      <FormLabel>Password</FormLabel>
+                      <FormControl placeholder="Password" type="password" autoComplete="off"/>
                     </FormGroup>
                     <FormGroup>
-                      <FormControl type="email" placeholder="Enter Email" />
-                    </FormGroup>
-                    <FormGroup>
-                      <FormControl type="password" placeholder="Password" autoComplete="off"/>
-                    </FormGroup>
-                    <FormGroup>
+                      <FormLabel>Password Confirm</FormLabel>
                       <FormControl
                         type="password"
                         autoComplete="off"
@@ -101,12 +79,15 @@ class RegisterPage extends Component {
                     </FormGroup>
                   </div>
                 }
-                ftTextCenter
                 legend={
-                  <Button wd fill neutral>
-                    Create Free Account
-                  </Button>
+                  <FormGroup>
+                    <Button bsStyle="info" fill wd>
+                      Register
+                    </Button>
+                    <FormText className="text-dark">Do you have an account? <Link to="/auth/login-page"> Login</Link></FormText>
+                  </FormGroup>
                 }
+                ftTextCenter
               />
             </form>
           </Col>
@@ -116,4 +97,4 @@ class RegisterPage extends Component {
   }
 }
 
-export default RegisterPage;
+export default LoginPage;

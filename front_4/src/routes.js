@@ -36,7 +36,7 @@ import Charts from "views/Charts.jsx";
 import Calendar from "views/Calendar.jsx";
 import UserPage from "views/Pages/UserPage.jsx";
 import LoginPage from "views/Pages/LoginPage.jsx";
-import RegisterPage from "views/Pages/RegisterPage_2.jsx";
+import RegisterPage from "views/Pages/RegisterPage.jsx";
 import LockScreenPage from "views/Pages/LockScreenPage.jsx";
 
 var routes = [
