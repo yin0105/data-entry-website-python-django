@@ -21,9 +21,10 @@ import {
   Col,
   FormGroup,
   FormLabel,
-  FormControl
+  FormControl,
+  FormText,
 } from "react-bootstrap";
-
+import { Link } from "react-router-dom"
 import Card from "components/Card/Card.jsx";
 
 import Button from "components/CustomButton/CustomButton.jsx";
@@ -48,7 +49,7 @@ class LoginPage extends Component {
     return (
       <Container>
         <Row>
-          <Col md={4} sm={6} mdOffset={4} smOffset={3}>
+          <Col md={{ span: 4, offset: 4 }} sm={{ span: 6, offset: 3 }}>
             <form>
               <Card
                 hidden={this.state.cardHidden}
@@ -64,15 +65,15 @@ class LoginPage extends Component {
                       <FormLabel>Password</FormLabel>
                       <FormControl placeholder="Password" type="password" autoComplete="off"/>
                     </FormGroup>
-                    <FormGroup>
-                      <Checkbox number="1" label="Subscribe to newsletter" />
-                    </FormGroup>
                   </div>
                 }
                 legend={
-                  <Button bsStyle="info" fill wd>
-                    Login
-                  </Button>
+                  <FormGroup>
+                    <Button bsStyle="info" fill wd>
+                      Login
+                    </Button>
+                    <FormText className="text-dark">Don't you have an account? <Link to="/auth/register-page"> Register</Link></FormText>
+                  </FormGroup>
                 }
                 ftTextCenter
               />

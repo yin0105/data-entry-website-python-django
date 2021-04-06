@@ -38,7 +38,7 @@ class Pages extends Component {
         pageClass = " login-page";
         break;
       case "/auth/register-page":
-        pageClass = " register-page";
+        pageClass = " login-page";
         break;
       case "/auth/lock-screen-page":
         pageClass = " lock-page";
@@ -70,7 +70,7 @@ class Pages extends Component {
   render() {
     return (
       <div>
-        <AuthNavbar />
+        {/* <AuthNavbar /> */}
         <div className="wrapper wrapper-full-page">
           <div
             className={"full-page" + this.getPageClass()}
@@ -80,7 +80,7 @@ class Pages extends Component {
             <div className="content">
               <Switch>{this.getRoutes(routes)}</Switch>
             </div>
-            <Footer transparent />
+            {/* <Footer transparent /> */}
             <div
               className="full-page-background"
               style={{ backgroundImage: "url(" + bgImage + ")" }}
