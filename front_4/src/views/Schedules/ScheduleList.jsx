@@ -43,7 +43,7 @@ class ScheduleList extends Component {
     const edit = <Tooltip id="edit">Edit Schedule</Tooltip>;
     const remove = <Tooltip id="remove">Remove</Tooltip>;
     const actions = (
-      <td className="td-actions text-center">
+      <td className="td-actions">
         <OverlayTrigger placement="top" overlay={edit}>
           <Button simple bsStyle="success" bsSize="xs">
             <i className="fa fa-edit" />
@@ -63,7 +63,7 @@ class ScheduleList extends Component {
             <FormLabel className="mx-auto h1 "><b>Schedule List</b></FormLabel>
           </div>
           <Row>
-            <Col md={{ span: 6, offset: 3 }} sm={{ span: 8, offset: 2 }}>
+            <Col md={{ span: 8, offset: 2 }} sm={{ span: 12 }}>
               <Card
                 tableFullWidth
                 textCenter
@@ -71,37 +71,52 @@ class ScheduleList extends Component {
                   <Table responsive>
                     <thead>
                       <tr>
-                        <th className="text-center">Schedule Name</th>
-                        <th className="text-center">Action</th>                        
-                        <th className="text-center">Active</th>                        
+                        <th>Collection Name</th>
+                        <th>Start Time</th>
+                        <th>Due</th>
+                        <th>Collect</th>
+                        <th>Action</th>                        
+                        <th>Active</th>                        
                       </tr>
                     </thead>
                     <tbody>
                       <tr>
                         <td>Andrew Mike</td>
+                        <td>03:33</td>
+                        <td>04:44</td>
+                        <td>04:55 - 05:20</td>
                         {actions}
-                        <td className="text-center">
+                        <td>
                           <Switch onText="" offText="" defaultValue={false} />
                         </td>
                       </tr>
                       <tr>
                         <td>John Doe</td>
+                        <td>03:33</td>
+                        <td>04:44</td>
+                        <td>04:55 - 05:20</td>
                         {actions}
-                        <td className="text-center">
+                        <td>
                           <Switch onText="" offText="" defaultValue={false} />
                         </td>
                       </tr>
                       <tr>
                         <td>Alex Mike</td>
+                        <td>03:33</td>
+                        <td>04:44</td>
+                        <td>04:55 - 05:20</td>
                         {actions}
-                        <td className="text-center">
+                        <td>
                           <Switch onText="" offText="" defaultValue={false} />
                         </td>
                       </tr>
                       <tr>
                         <td>Mike Monday</td>
+                        <td>03:33</td>
+                        <td>04:44</td>
+                        <td>04:55 - 05:20</td>
                         {actions}
-                        <td className="text-center">
+                        <td>
                           <Switch onText="" offText="" defaultValue={false} />
                         </td>
                       </tr>

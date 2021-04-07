@@ -42,7 +42,7 @@ class CollectionList extends Component {
   render() {
     const remove = <Tooltip id="remove">Remove</Tooltip>;
     const actions = (
-      <td className="td-actions text-center">
+      <td className="td-actions">
         <OverlayTrigger placement="top" overlay={remove}>
           <Button simple bsStyle="danger" bsSize="xs">
             <i className="fa fa-times" />
@@ -65,8 +65,8 @@ class CollectionList extends Component {
                   <Table responsive>
                     <thead>
                       <tr>
-                        <th className="text-center">Collection Name</th>
-                        <th className="text-center">Action</th>                        
+                        <th>Collection Name</th>                        
+                        <th>Action</th>                        
                       </tr>
                     </thead>
                     <tbody>

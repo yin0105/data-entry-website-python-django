@@ -123,3 +123,7 @@ div.form-check {
 .schedule_table .row {
     margin: 3px;
 }
+
+td, th {
+    text-align: center;
+}

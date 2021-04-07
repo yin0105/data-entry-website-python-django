@@ -42,6 +42,9 @@ import CollectionList from "views/Collections/CollectionList";
 import AddCollection from "views/Collections/AddCollection";
 import ScheduleList from "views/Schedules/ScheduleList";
 import AddSchedule from "views/Schedules/AddSchedule"
+import ScheduleStatus from "views/Schedules/ScheduleStatus";
+import ScheduleListUser from "views/Schedules/ScheduleListUser"
+import CollectionPage from "views/Collections/CollectionPage"
 
 var routes = [
   {
@@ -49,7 +52,7 @@ var routes = [
     layout: "/admin",
     name: "Dashboard",
     icon: "pe-7s-graph",
-    component: Dashboard
+    component: ScheduleStatus
   },
   {
     path: "/collection_list",
@@ -151,6 +154,22 @@ var routes = [
     name: "Register",
     icon: "pe-7s-date",
     component: RegisterPage
+  },
+  {
+    path: "/home",
+    layout: "/user",
+    name: "ScheduleListUser",
+    icon: "pe-7s-date",
+    redirect: true,
+    component: ScheduleListUser
+  },
+  {
+    path: "/collection_page",
+    layout: "/user",
+    name: "CollectionPage",
+    icon: "pe-7s-date",
+    redirect: true,
+    component: CollectionPage
   },
 ];
 export default routes;

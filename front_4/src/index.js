@@ -25,6 +25,7 @@ import "assets/css/pe-icon-7-stroke.css";
 
 import AuthLayout from "layouts/Auth.jsx";
 import AdminLayout from "layouts/Admin.jsx";
+import UserLayout from "layouts/User.jsx";
 // import CollectionList from "views/Collections/CollectionList"
 
 ReactDOM.render(
@@ -32,6 +33,7 @@ ReactDOM.render(
     <Switch>
       <Route path="/auth" render={props => <AuthLayout {...props} />} />
       <Route path="/admin" render={props => <AdminLayout {...props} />} />
+      <Route path="/user" render={props => <UserLayout {...props} />} />
       {/* <Route path="/add_collection" render={props => <CollectionList {...props} />} /> */}
       <Redirect from="/" to="/admin/dashboard" />
     </Switch>
