@@ -165,7 +165,7 @@ class CollectionPage extends Component {
                                     <tr>
                                         <td><FormCheck type="checkbox"/></td>
                                         <td><FormText>13:10</FormText></td>
-                                        <td><FormText>Atlanta Hawks</FormText></td>
+                                        <td><FormText>Atlanta Hawks</FormText></td> 
                                         <td><FormText>Miami Heat</FormText></td>
                                         <td><FormText>NBA</FormText></td>
                                         <td><FormControl type="text" value="Atlanta Hawks" /></td>
