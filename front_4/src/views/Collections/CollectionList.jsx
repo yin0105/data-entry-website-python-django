@@ -21,8 +21,10 @@ import {
   Col,
   Table,
   OverlayTrigger,
-  Tooltip
+  Tooltip,
+  FormGroup
 } from "react-bootstrap";
+import { Link } from "react-router-dom"
 // react component that creates a switch button that changes from on to off mode
 import Switch from "react-bootstrap-switch";
 
@@ -38,45 +40,11 @@ import img5 from "assets/img/blog-5.jpg";
 
 class CollectionList extends Component {
   render() {
-    const view = <Tooltip id="view">View Profile</Tooltip>;
-    const edit = <Tooltip id="edit">Edit Profile</Tooltip>;
     const remove = <Tooltip id="remove">Remove</Tooltip>;
-    const viewPost = <Tooltip id="view">View Post</Tooltip>;
-    const editPost = <Tooltip id="edit">Edit Post</Tooltip>;
-    const removePost = <Tooltip id="remove">Remove Post</Tooltip>;
     const actions = (
       <td className="td-actions text-center">
-        <OverlayTrigger placement="top" overlay={view}>
-          <Button simple bsStyle="info" bsSize="xs">
-            <i className="fa fa-user" />
-          </Button>
-        </OverlayTrigger>
-        <OverlayTrigger placement="top" overlay={edit}>
-          <Button simple bsStyle="success" bsSize="xs">
-            <i className="fa fa-edit" />
-          </Button>
-        </OverlayTrigger>
         <OverlayTrigger placement="top" overlay={remove}>
           <Button simple bsStyle="danger" bsSize="xs">
-            <i className="fa fa-times" />
-          </Button>
-        </OverlayTrigger>
-      </td>
-    );
-    const actionsPost = (
-      <td className="td-actions">
-        <OverlayTrigger placement="left" overlay={viewPost}>
-          <Button simple icon bsStyle="info">
-            <i className="fa fa-image" />
-          </Button>
-        </OverlayTrigger>
-        <OverlayTrigger placement="left" overlay={editPost}>
-          <Button simple icon bsStyle="success">
-            <i className="fa fa-edit" />
-          </Button>
-        </OverlayTrigger>
-        <OverlayTrigger placement="left" overlay={removePost}>
-          <Button simple icon bsStyle="danger">
             <i className="fa fa-times" />
           </Button>
         </OverlayTrigger>
@@ -91,6 +59,7 @@ class CollectionList extends Component {
                 title="Collections List"
                 category=""
                 tableFullWidth
+                textCenter
                 content={
                   <Table responsive>
                     <thead>
@@ -118,6 +87,13 @@ class CollectionList extends Component {
                       </tr>
                     </tbody>
                   </Table>
+                }
+                legend={
+                  <div class="d-flex">
+                    <Link to="/admin/add_collection" className="mx-auto btn btn-primary btn-fill">
+                      Add Collection
+                    </Link>
+                  </div>
                 }
               />
             </Col>

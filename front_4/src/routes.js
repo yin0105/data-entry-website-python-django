@@ -39,6 +39,7 @@ import LoginPage from "views/Pages/LoginPage.jsx";
 import RegisterPage from "views/Pages/RegisterPage.jsx";
 import LockScreenPage from "views/Pages/LockScreenPage.jsx";
 import CollectionList from "views/Collections/CollectionList";
+import AddCollection from "views/Collections/AddCollection";
 import ScheduleList from "views/Schedules/ScheduleList";
 
 var routes = [
@@ -50,51 +51,85 @@ var routes = [
     component: Dashboard
   },
   {
-    collapse: true,
-    path: "/components",
-    name: "Collections",
-    state: "openComponents",
+    path: "/collection_list",
+    layout: "/admin",
+    name: "Collection",
     icon: "pe-7s-plugin",
-    views: [
-      {
-        path: "/buttons",
-        layout: "/admin",
-        name: "Add Collection",
-        mini: "B",
-        component: Buttons
-      },
-      {
-        path: "/grid-system",
-        layout: "/admin",
-        name: "Collection List",
-        mini: "GS",
-        component: CollectionList
-      },
-    ]
+    component: CollectionList
   },
   {
-    collapse: true,
-    path: "/forms",
-    name: "Schedules",
-    state: "openForms",
+    path: "/schedule_list",
+    layout: "/admin",
+    name: "Schedule",
     icon: "pe-7s-note2",
-    views: [
-      {
-        path: "/regular-forms",
-        layout: "/admin",
-        name: "Add Schedule",
-        mini: "RF",
-        component: RegularForms
-      },
-      {
-        path: "/extended-forms",
-        layout: "/admin",
-        name: "Schedule List",
-        mini: "EF",
-        component: ScheduleList
-      },
-    ]
+    component: ScheduleList
   },
+
+  {
+    path: "/add_collection",
+    layout: "/admin",
+    name: "Add Collection",
+    mini: "B",
+    redirect: true,
+    component: AddCollection
+  },
+
+  {
+    path: "/regular-forms",
+    layout: "/admin",
+    name: "Add Schedule",
+    mini: "RF",
+    redirect: true,
+    component: RegularForms
+  },
+
+  // {
+  //   collapse: true,
+  //   path: "/components",
+  //   name: "Collections",
+  //   state: "openComponents",
+  //   icon: "pe-7s-plugin",
+  //   views: [
+  //     {
+  //       path: "/add_collection",
+  //       layout: "/admin",
+  //       name: "Add Collection",
+  //       mini: "B",
+  //       redirect: true,
+  //       component: AddCollection
+  //     },
+  //     {
+  //       path: "/collection_list",
+  //       layout: "/admin",
+  //       name: "Collection List",
+  //       mini: "GS",
+  //       component: CollectionList
+  //     },
+  //   ]
+  // },
+  // {
+  //   collapse: true,
+  //   path: "/forms",
+  //   name: "Schedules",
+  //   state: "openForms",
+  //   icon: "pe-7s-note2",
+  //   views: [
+  //     {
+  //       path: "/regular-forms",
+  //       layout: "/admin",
+  //       name: "Add Schedule",
+  //       mini: "RF",
+  //       component: RegularForms
+  //     },
+  //     {
+  //       path: "/schedule_list",
+  //       layout: "/admin",
+  //       name: "Schedule List",
+  //       mini: "EF",
+  //       component: ScheduleList
+  //     },
+  //   ]
+  // },
   {
     path: "/charts",
     layout: "/admin",

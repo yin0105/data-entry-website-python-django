@@ -99,7 +99,7 @@
 .login-page,
 .lock-page {
   > .content {
-    padding-top: 22vh;
+    padding-top: calc(50vh - 240px);
   }
 }
 
@@ -165,6 +165,8 @@
 }
 
 .register-page {
+  > .content {padding-top: calc(50vh - 300px) !important;}
+
   .header-text {
     color: #ffffff;
     text-align: center;

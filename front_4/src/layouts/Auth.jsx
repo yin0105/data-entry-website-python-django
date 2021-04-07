@@ -23,7 +23,10 @@ import AuthNavbar from "components/Navbars/AuthNavbar.jsx";
 // dinamically create pages routes
 import routes from "routes.js";
 
-import bgImage from "assets/img/full-screen-image-3.jpg";
+// import bgImage from "assets/img/full-screen-image-3.jpg";
+// import bgImage from "assets/img/pexels-iconcom-733174.jpg";
+import bgImage from "assets/img/pexels-lumn-295771.jpg";
+
 
 class Pages extends Component {
   componentWillMount() {
@@ -38,7 +41,7 @@ class Pages extends Component {
         pageClass = " login-page";
         break;
       case "/auth/register-page":
-        pageClass = " login-page";
+        pageClass = " login-page register-page";
         break;
       case "/auth/lock-screen-page":
         pageClass = " lock-page";
