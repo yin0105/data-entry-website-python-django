@@ -119,3 +119,7 @@ div.form-check {
     margin-left: 15px;
     margin-right: 15px;
 }
+
+.schedule_table .row {
+    margin: 3px;
+}

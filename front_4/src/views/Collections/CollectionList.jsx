@@ -22,7 +22,7 @@ import {
   Table,
   OverlayTrigger,
   Tooltip,
-  FormGroup
+  FormLabel,
 } from "react-bootstrap";
 import { Link } from "react-router-dom"
 // react component that creates a switch button that changes from on to off mode
@@ -53,11 +53,12 @@ class CollectionList extends Component {
     return (
       <div className="main-content">
         <Container fluid>
+          <div className="d-flex">
+            <FormLabel className="mx-auto h1 "><b>Collection List</b></FormLabel>
+          </div>
           <Row>
             <Col md={{ span: 6, offset: 3 }} sm={{ span: 8, offset: 2 }}>
               <Card
-                title="Collections List"
-                category=""
                 tableFullWidth
                 textCenter
                 content={

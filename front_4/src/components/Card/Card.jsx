@@ -25,6 +25,7 @@ class Card extends Component {
           (this.props.hidden ? " card-hidden" : "") +
           (this.props.calendar ? " card-calendar" : "") +
           (this.props.plain ? " card-plain" : "") +
+          (this.props.w_100 ? " w-100" : "") +
           (this.props.wizard ? " card-wizard" : "")
         }
       >
@@ -43,7 +44,7 @@ class Card extends Component {
             "content" +
             (this.props.ctAllIcons ? " all-icons" : "") +
             (this.props.ctFullWidth ? " content-full-width" : "") +
-            (this.props.ctTextCenter ? " text-center" : "") +
+            (this.props.ctTextCenter ? " text-center" : "") +            
             (this.props.tableFullWidth ? " table-full-width" : "")
           }
         >

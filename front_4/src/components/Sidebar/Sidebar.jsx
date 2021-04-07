@@ -22,7 +22,7 @@ import { NavLink } from "react-router-dom";
 import PerfectScrollbar from "perfect-scrollbar";
 import "perfect-scrollbar/css/perfect-scrollbar.css";
 
-import AdminNavbarLinks from "components/Navbars/AdminNavbarLinks.jsx";
+// import AdminNavbarLinks from "components/Navbars/AdminNavbarLinks.jsx";
 
 // image for avatar in Sidebar
 import avatar from "assets/img/default-avatar.png";
@@ -251,7 +251,7 @@ class Sidebar extends Component {
               If we are on responsive, we want both links from navbar and sidebar
               to appear in sidebar, so we render here HeaderLinks
             */}
-            {this.state.width <= 992 ? <AdminNavbarLinks /> : null}
+            {/* {this.state.width <= 992 ? <AdminNavbarLinks /> : null} */}
             {/*
               here we render the links in the sidebar if the link is simple,
               we make a simple link, if not, we have to create a collapsible group,

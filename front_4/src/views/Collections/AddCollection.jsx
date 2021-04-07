@@ -92,6 +92,9 @@ class AddCollection extends Component {
     return (
       <div className="main-content">
         <Container fluid>
+            <div className="d-flex">
+                <FormLabel className="mx-auto h1 "><b>Add Collection</b></FormLabel>
+            </div>
             <Row className="align-items-center mb-4">
                 <Col md={{ span: 3, offset: 2 }} sm={{ span: 5 }} className="text-right">
                     <FormLabel>Collection Name: </FormLabel>

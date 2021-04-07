@@ -20,12 +20,8 @@ import { Switch, Route } from "react-router-dom";
 import PerfectScrollbar from "perfect-scrollbar";
 import "perfect-scrollbar/css/perfect-scrollbar.css";
 // react component that creates notifications (like some alerts with messages)
-import NotificationSystem from "react-notification-system";
 
 import Sidebar from "components/Sidebar/Sidebar.jsx";
-import AdminNavbar from "components/Navbars/AdminNavbar.jsx";
-import Footer from "components/Footer/Footer.jsx";
-import FixedPlugin from "components/FixedPlugin/FixedPlugin.jsx";
 
 import image from "assets/img/full-screen-image-3.jpg";
 
@@ -167,7 +163,7 @@ class Dashboard extends Component {
   render() {
     return (
       <div className="wrapper">
-        <NotificationSystem ref="notificationSystem" style={style} />
+        {/* <NotificationSystem ref="notificationSystem" style={style} /> */}
         <Sidebar
           {...this.props}
           image={this.state.image}
@@ -184,11 +180,11 @@ class Dashboard extends Component {
           }
           ref="mainPanel"
         >
-          <AdminNavbar
+          {/* <AdminNavbar
             {...this.props}
             handleMiniClick={this.handleMiniClick}
             navbar={this.state.navbar}
-          />
+          /> */}
           <Switch>{this.getRoutes(routes)}</Switch>
           {/* <Footer fluid />
           <FixedPlugin

@@ -21,7 +21,8 @@ import {
   Col,
   Table,
   OverlayTrigger,
-  Tooltip
+  Tooltip,
+  FormLabel,
 } from "react-bootstrap";
 import { Link } from "react-router-dom"
 // react component that creates a switch button that changes from on to off mode
@@ -58,11 +59,12 @@ class ScheduleList extends Component {
     return (
       <div className="main-content">
         <Container fluid>
+          <div className="d-flex">
+            <FormLabel className="mx-auto h1 "><b>Schedule List</b></FormLabel>
+          </div>
           <Row>
             <Col md={{ span: 6, offset: 3 }} sm={{ span: 8, offset: 2 }}>
               <Card
-                title="Schedules List"
-                category=""
                 tableFullWidth
                 textCenter
                 content={

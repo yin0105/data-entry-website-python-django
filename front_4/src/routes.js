@@ -41,6 +41,7 @@ import LockScreenPage from "views/Pages/LockScreenPage.jsx";
 import CollectionList from "views/Collections/CollectionList";
 import AddCollection from "views/Collections/AddCollection";
 import ScheduleList from "views/Schedules/ScheduleList";
+import AddSchedule from "views/Schedules/AddSchedule"
 
 var routes = [
   {
@@ -69,18 +70,18 @@ var routes = [
     path: "/add_collection",
     layout: "/admin",
     name: "Add Collection",
-    mini: "B",
+    mini: "AC",
     redirect: true,
     component: AddCollection
   },
 
   {
-    path: "/regular-forms",
+    path: "/add_schedule",
     layout: "/admin",
     name: "Add Schedule",
-    mini: "RF",
+    mini: "AS",
     redirect: true,
-    component: RegularForms
+    component: AddSchedule
   },
 
   // {

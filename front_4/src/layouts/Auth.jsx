@@ -17,8 +17,8 @@
 import React, { Component } from "react";
 import { Switch, Route } from "react-router-dom";
 
-import Footer from "components/Footer/Footer.jsx";
-import AuthNavbar from "components/Navbars/AuthNavbar.jsx";
+// import Footer from "components/Footer/Footer.jsx";
+// import AuthNavbar from "components/Navbars/AuthNavbar.jsx";
 
 // dinamically create pages routes
 import routes from "routes.js";
