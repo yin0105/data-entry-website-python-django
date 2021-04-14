@@ -1,3 +1,4 @@
 {
-    "git.ignoreLimitWarning": true
+    "git.ignoreLimitWarning": true,
+    "python.pythonPath": "e:\\Workspace\\Django Projects\\Freelancer.com\\data-entry-website-python-django\\env\\Scripts\\python.exe"
 }
