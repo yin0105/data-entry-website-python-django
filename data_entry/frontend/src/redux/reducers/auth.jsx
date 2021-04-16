@@ -15,6 +15,7 @@ export default (state = initialState, action) => {
   switch (action.type) {
     case auth.LOGIN_SUCCESS:
     case auth.REFRESH_TOKEN_SUCCESS:
+      saveToLocalStorage("token", action.payload.auth_token);
       return {
         ...state,
         access: {
@@ -42,10 +43,12 @@ export default (state = initialState, action) => {
     case auth.GET_CLAIM_TYPE_LIST_FAILURE:
     case auth.GET_SUBMISSION_TYPE_LIST_FAILURE:
     case auth.GET_SERVICE_ADVISOR_LIST_FAILURE:
-    case auth.GET_TECHNICIAN_LIST_FAILURE:    
+    case auth.GET_TECHNICIAN_LIST_FAILURE: 
+      localStorage.clear();   
       return initialState;
 
     case auth.GET_USER_INFO_SUCCESS:
+      saveToLocalStorage("user", action.payload);
       return {
         ...state,
         isFetching: false,
@@ -53,6 +56,7 @@ export default (state = initialState, action) => {
       };
 
     case auth.GET_CLAIM_TYPE_LIST_SUCCESS:
+      saveToLocalStorage("claim_types", action.payload);
       return {
         ...state,
         isFetching: false,
@@ -60,6 +64,7 @@ export default (state = initialState, action) => {
       };
 
     case auth.GET_SUBMISSION_TYPE_LIST_SUCCESS:
+      saveToLocalStorage("submission_types", action.payload);
       return {
         ...state,
         isFetching: false,
@@ -67,6 +72,7 @@ export default (state = initialState, action) => {
       };
 
     case auth.GET_SERVICE_ADVISOR_LIST_SUCCESS:
+      saveToLocalStorage("service_advisors", action.payload);
       return {
         ...state,
         isFetching: false,
@@ -74,6 +80,7 @@ export default (state = initialState, action) => {
       };
 
     case auth.GET_TECHNICIAN_LIST_SUCCESS:
+      saveToLocalStorage("technicians", action.payload);
       return {
         ...state,
         isFetching: false,
@@ -82,5 +89,26 @@ export default (state = initialState, action) => {
     
     default:
       return state
+  }
+}
+
+export const saveToLocalStorage = (itemName, st) => {
+  try {
+    const serialisedState = JSON.stringify(st);
+    localStorage.setItem(itemName, serialisedState);
+    console.log("localStorage(", itemName, ") = ", serialisedState)
+  } catch (e) {
+    console.warn(e);
+  }
+}
+
+export const loadFromLocalStorage = (itemName) => {
+  try {
+    const serialisedState = localStorage.getItem(itemName);
+    if (serialisedState === null) return undefined;
+    return JSON.parse(serialisedState);
+  } catch (e) {
+    console.warn(e);
+    return undefined;
   }
 }

@@ -67,24 +67,71 @@ class AuthHelper {
   };
 
   updateProfile = profile => {
-    return ApiHelper.put('/api/auth/user', profile);
+    return ApiHelper.put('/api/auth/user');
   }
 
-  getClaimTypeList = () => {
-    return ApiHelper.get('/api/claim/get_claim_types');
-  };
+  getSportsId = () => {
+    // return ApiHelper.put('/api/auth/user');  }
+    return ({
+      "sports": [
+          {
+              "sport_id": 1,
+              "sport_name": "NCAA Football"
+          },
+          {
+              "sport_id": 2,
+              "sport_name": "NFL"
+          },
+          {
+              "sport_id": 3,
+              "sport_name": "MLB"
+          },
+          {
+              "sport_id": 4,
+              "sport_name": "NBA"
+          },
+          {
+              "sport_id": 5,
+              "sport_name": "NCAA Men's Basketball"
+          },
+          {
+              "sport_id": 6,
+              "sport_name": "NHL"
+          },
+          {
+              "sport_id": 7,
+              "sport_name": "UFC/MMA"
+          },
+          {
+              "sport_id": 8,
+              "sport_name": "WNBA"
+          },
+          {
+              "sport_id": 9,
+              "sport_name": "CFL"
+          },
+          {
+              "sport_id": 10,
+              "sport_name": "MLS"
+          }
+    ]});
+  }
 
-  getSubmissionTypeList = () => {
-    return ApiHelper.get('/api/claim/get_submission_types');
-  };
+  // getClaimTypeList = () => {
+  //   return ApiHelper.get('/api/claim/get_claim_types');
+  // };
 
-  getServiceAdvisorList = () => {
-    return ApiHelper.get('/api/claim/get_service_advisors');
-  };
+  // getSubmissionTypeList = () => {
+  //   return ApiHelper.get('/api/claim/get_submission_types');
+  // };
 
-  getTechnicianList = () => {
-    return ApiHelper.get('/api/claim/get_technicians');
-  };
+  // getServiceAdvisorList = () => {
+  //   return ApiHelper.get('/api/claim/get_service_advisors');
+  // };
+
+  // getTechnicianList = () => {
+  //   return ApiHelper.get('/api/claim/get_technicians');
+  // };
 }
 
 export default new AuthHelper();

@@ -16,10 +16,12 @@ import { Link, Redirect } from 'react-router-dom';
 import Card from "components/Card/Card.jsx";
 
 import Button from "components/CustomButton/CustomButton.jsx";
-import { login, getUserInfo, getBasicData } from 'redux/actions/auth.jsx';
+import { login, getUserInfo, getSportsId } from 'redux/actions/auth.jsx';
 import {connect} from "react-redux";
 import AuthHelper from 'helpers/authHelper.jsx';
 import {validateEmail} from 'helpers/commonHelper.jsx';
+import { saveToLocalStorage, loadFromLocalStorage } from 'redux/reducers/auth'
+import axios from 'axios'
 
 class LoginPage extends Component {
   constructor(props) {
@@ -32,13 +34,27 @@ class LoginPage extends Component {
       }
     };
   }
+
+  rapidapi_headers = { 
+    'x-rapidapi-key': "b50ad1dda9msh31dcaef409c21c6p15cff7jsnc6410d291bd0",
+    'x-rapidapi-host': "therundown-therundown-v1.p.rapidapi.com",
+    'useQueryString': true,
+  };  
+  
   componentDidMount() {
     setTimeout(
       function() {
         this.setState({ cardHidden: false });
       }.bind(this),
       700
-    );    
+    ); 
+    setTimeout(() => {
+      axios.get('https://therundown-therundown-v1.p.rapidapi.com/sports', {'headers': this.rapidapi_headers})
+          .then(res => {
+              saveToLocalStorage("sports_ids", res.data)
+          })
+    }, 100);   
+    saveToLocalStorage("rapidapi_headers", this.rapidapi_headers)
   }
 
   handleLogin = e => {
@@ -55,13 +71,6 @@ class LoginPage extends Component {
       this.setState({errors});
       return;
     }
-
-    // if (!validateEmail(email)) {
-    //   errors.email = 'Email is invalid.';
-    //   this.setState({errors});
-    //   return;
-    // }
-
     if (password === '') {
       errors.password = 'Password is required';
       this.setState({errors});
@@ -71,22 +80,39 @@ class LoginPage extends Component {
 
     this.props.login(username, password)
       .then(
-        () => {
-          // Get Basic Data (claim types, submission types, service advisors, technicians)
-          this.props.get_basic_data()
-            .then(
-              () => {
-                console.log("############ get_basic_data() :: Success");
-                // Get User Information                
-              }
-            ).catch(
-              err => {
-                console.log("Get Basic Data Error");
-              }
+        async(res) => {
+          // saveToLocalStorage("token", )
+            
+          // await axios.get('/api/claim/get_claim_types', {headers})
+          //   .then(res => {
+          //     saveToLocalStorage("claim_types", res.data.claim_types.map(d => ({
+          //       "value" : d.name,
+          //       "label" : d.name
+          //     })))
+          //   })
+          // await axios.get('/api/claim/get_submission_types', {headers})
+          //   .then(res => {
+          //     saveToLocalStorage("submission_types", res.data.submission_types.map(d => ({
+          //       "value" : d.name,
+          //       "label" : d.name
+          //     })))
+          //   });
+          // await axios.get('/api/claim/get_service_advisors', {headers})
+          //   .then(res => {
+          //     saveToLocalStorage("service_advisors", res.data.service_advisor.map(d => ({
+          //       "value" : d.id,
+          //       "label" : d.name
+          //     })))
+          //   });
+          // await axios.get('/api/claim/get_technicians', {headers})
+          //   .then(res => {
+          //     saveToLocalStorage("technicians", res.data.technicians.map(d => ({
+          //       "value" : d.id,
+          //       "label" : d.name
+          //     })))
+          //   });
 
-            );
-
-          this.props.get_userinfo()
+          await this.props.get_userinfo()
             .then(
               () => {
                 console.log("######## get_userinfo() :: Success");
@@ -97,7 +123,6 @@ class LoginPage extends Component {
               }
 
             );
-          
         }
       ).catch(err => {
         console.log("Login Error:::");
@@ -141,7 +166,7 @@ class LoginPage extends Component {
                   content={
                     <div>
                       <FormGroup>
-                        <FormLabel>Email address</FormLabel>
+                        <FormLabel>User name</FormLabel>
                         <FormControl placeholder="Enter username" type="text" name="username"  onChange={this.handleChangeInput}/>
                         <FormFeedback className="text-danger">{errors.username}</FormFeedback>
                       </FormGroup>
@@ -178,7 +203,8 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = (dispatch) => ({
   login: (username, password) => dispatch(login(username, password)),
   get_userinfo: () => dispatch(getUserInfo()),
-  get_basic_data: () => dispatch(getBasicData()),
+  // get_basic_data: () => dispatch(getBasicData()),
+  get_sports_id: () => dispatch(getSportsId()),
 });
 
 

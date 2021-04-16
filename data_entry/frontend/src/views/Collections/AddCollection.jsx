@@ -1,26 +1,8 @@
-/*!
-
-=========================================================
-* Light Bootstrap Dashboard PRO React - v1.2.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/light-bootstrap-dashboard-pro-react
-* Copyright 2019 Creative Tim (https://www.creative-tim.com)
-
-* Coded by Creative Tim
-
-=========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-*/
 import React, { Component } from "react";
 import {
   Container,
   Row,
   Col,
-//   OverlayTrigger,
-//   Tooltip,
   FormGroup,
   FormLabel,
   FormText,
@@ -31,12 +13,13 @@ import {
 import Card from "components/Card/Card.jsx";
 import Button from "components/CustomButton/CustomButton.jsx";
 import { Link } from "react-router-dom"
+import { loadFromLocalStorage } from "redux/reducers/auth";
 
 
 const fieldTypeOptions = [
+    { value: 'numeric', label: 'numeric' },
     { value: 'teamname', label: 'teamname' },
     { value: 'freeform', label: 'freeform' },
-    { value: 'numeric', label: 'numeric' }
 ]
 
 
@@ -49,29 +32,98 @@ class AddCollection extends Component {
         }
     };
 
+    sports_ids = loadFromLocalStorage("sports_ids");
+
+    // componentDidMount() {
+    //     // setTimeout(() => {
+    //     //     this.props.rapidapi_key = "b50ad1dda9msh31dcaef409c21c6p15cff7jsnc6410d291bd0";
+    //     //     this.props.rapidapi_host = "therundown-therundown-v1.p.rapidapi.com";
+    //     //     this.props.use_query_string = true;
+    //     //     const headers = { 
+    //     //         'x-rapidapi-key': this.props.rapidapi_key,
+    //     //         'x-rapidapi-host': this.props.rapidapi_host,
+    //     //         'useQueryString': this.props.useQueryString,
+    //     //     };
+    //     //     axios.get('https://therundown-therundown-v1.p.rapidapi.com/sports', {headers})
+    //     //         .then(res => {
+    //     //             const sports_ids = res.data;
+    //     //             this.setState({ sports_ids });
+    //     //         })
+    //     // }, 100);
+    //     this.props.sports_ids = {
+    //         "sports": [
+    //             {
+    //                 "sport_id": 1,
+    //                 "sport_name": "NCAA Football"
+    //             },
+    //             {
+    //                 "sport_id": 2,
+    //                 "sport_name": "NFL"
+    //             },
+    //             {
+    //                 "sport_id": 3,
+    //                 "sport_name": "MLB"
+    //             },
+    //             {
+    //                 "sport_id": 4,
+    //                 "sport_name": "NBA"
+    //             },
+    //             {
+    //                 "sport_id": 5,
+    //                 "sport_name": "NCAA Men's Basketball"
+    //             },
+    //             {
+    //                 "sport_id": 6,
+    //                 "sport_name": "NHL"
+    //             },
+    //             {
+    //                 "sport_id": 7,
+    //                 "sport_name": "UFC/MMA"
+    //             },
+    //             {
+    //                 "sport_id": 8,
+    //                 "sport_name": "WNBA"
+    //             },
+    //             {
+    //                 "sport_id": 9,
+    //                 "sport_name": "CFL"
+    //             },
+    //             {
+    //                 "sport_id": 10,
+    //                 "sport_name": "MLS"
+    //             }
+    //     ]};
+    // }
+
     handleIsAPIChange = e => {
         this.setState({ isAPI: e.target.checked });
     };
 
-    handleInputChange = (e, index) => {
-        const { name, value } = e.target;
-        const list = [...inputList];
-        list[index][name] = value;
-        setInputList(list);
+    handleFieldNameChange = (e, index) => {
+        const { value } = e.target;
+        const list = [...this.state.inputList];
+        list[index]['fieldName'] = value;
+        this.setState({inputList: list});
+    };
+
+    handleFieldTypeChange = (e, index) => {
+        const { value } = e.target;
+        const list = [...this.state.inputList];
+        list[index]['fieldType'] = value;
+        this.setState({inputList: list});
     };
     
     // handle click event of the Remove button
     handleRemoveField = index => {
         const list = [...this.state.inputList];
         list.splice(index, 1);
-        console.log("removing", list);
         this.setState({inputList: list});
     };
     
     // handle click event of the Add button
     handleAddNewField = () => {
-        console.log('addings')
-        this.setState({inputList: [...this.state.inputList, { fieldName: "", fieldType: "abcd" }]});
+        this.setState({inputList: [...this.state.inputList, { fieldName: "", fieldType: "numeric" }]});
+        console.log("inputList =>", this.state.inputList)
     };
 
     render() {
@@ -103,11 +155,14 @@ class AddCollection extends Component {
                                         <FormText  className="text-center w-100">Choose the sports for this collection</FormText>
                                     </Row>
                                     <Row className="d-flex justify-content-center mb-0">
-                                        <FormCheck inline label="NBA" type="checkbox"/>
-                                        <FormCheck inline label="NFL" type="checkbox"/>
+                                        {this.sports_ids.sports.map((x, i) => {
+                                            return (<FormCheck inline label={x.sport_name} value={x.sport_id} type="checkbox"/>);
+                                        })}
+                                        
+                                        {/* <FormCheck inline label="NFL" type="checkbox"/>
                                         <FormCheck inline label="MLB" type="checkbox"/>
                                         <FormCheck inline label="NCAAB" type="checkbox"/>
-                                        <FormCheck inline label="NCAAF" type="checkbox"/>
+                                        <FormCheck inline label="NCAAF" type="checkbox"/> */}
                                     </Row>
                                 </div>
                             }
@@ -147,41 +202,19 @@ class AddCollection extends Component {
                             content={
                                 <div >
                                     {this.state.inputList.map((x, i) => {
-                                        {/* return (
-                                            <div className="box">
-                                            <input
-                                                name="firstName"
-                                                placeholder="Enter First Name"
-                                                value={x.firstName}
-                                                onChange={e => this.handleInputChange(e, i)}
-                                            />
-                                            <input
-                                                className="ml10"
-                                                name="lastName"
-                                                placeholder="Enter Last Name"
-                                                value={x.lastName}
-                                                onChange={e => this.handleInputChange(e, i)}
-                                            />
-                                            <div className="btn-box">
-                                                <button
-                                                className="mr10"
-                                                onClick={() => this.handleRemoveClick(i)}>Remove</button>
-                                            </div>
-                                            </div>
-                                        ); */}
                                         return (
                                             <Row className="align-items-center">
                                                 <Col md={{ span:2 }} className="text-right">
                                                     <FormLabel>Field Name: </FormLabel>
                                                 </Col>
                                                 <Col md={{ span:3 }}>
-                                                    <FormControl type="text" value={x.fieldName}/>
+                                                    <FormControl type="text" value={x.fieldName} onChange={e => this.handleFieldNameChange(e, i)}/>
                                                 </Col>
                                                 <Col md={{ span:2 }} className="text-right">
                                                     <FormLabel>Field Type: </FormLabel>
                                                 </Col>
                                                 <Col md={{ span:3 }}>
-                                                    <FormControl as="select" selectedValue={x.fieldType}>
+                                                    <FormControl as="select" selectedValue={x.fieldType} onChange={e => this.handleFieldTypeChange(e, i)}>
                                                         {fieldTypeOptions.map((xx, ii) => {
                                                             return (<option value={xx.value}>{xx.label}</option>);
                                                         })}
