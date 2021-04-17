@@ -6,12 +6,6 @@ urlpatterns = [
   path('get_submission_types', views.get_submission_types),
   path('get_service_advisors', views.get_service_advisors),
   path('get_technicians', views.get_technicians),
-  # path('add_claim', views.add_claim),
-  # path('get_claim/<int:claim_id>', views.get_claim),
-  # path('get_claims', views.get_claims),
-  # path('get_claims_dealership/<dealership_name>', views.get_claims_dealership),
-  path('claim/', views.ClaimView.as_view(), name= 'claim_list'),
-  # path('add_dealership', views.add_dealership),
-#   path('updatebook/<int:book_id>', views.update_book),
-#   path('deletebook/<int:book_id>', views.delete_book)
+  # path('claim/', views.ClaimView.as_view(), name= 'claim_list'),
+  path('api_cache/', views.APICacheView.as_view(), name= 'apicache_list'),
 ]

@@ -1,6 +1,6 @@
 from django.db.models.fields import DateTimeField
 from rest_framework import serializers, fields
-from .models import ClaimType, SubmissionType, ServiceAdvisor, Technician, Claim
+from .models import APICache, ClaimType, SubmissionType, ServiceAdvisor, Technician
 from datetime import datetime
 
 class ClaimTypeSerializer(serializers.ModelSerializer):
@@ -28,13 +28,17 @@ class TechnicianSerializer(serializers.ModelSerializer):
         fields = ['id', 'name']
 
 
-class ClaimSerializer(serializers.ModelSerializer):
-    pdf = serializers.FileField()
-    # upload_date = DateTimeField()
-    class Meta:
-        model = Claim
-        fields = ['id', 'repair_order', 'pdf', 'dealership', 'claim_type', 'submission_type', 'service_advisor', 'technician', 'upload_date']               
+# class ClaimSerializer(serializers.ModelSerializer):
+#     pdf = serializers.FileField()
+#     # upload_date = DateTimeField()
+#     class Meta:
+#         model = Claim
+#         fields = ['id', 'repair_order', 'pdf', 'dealership', 'claim_type', 'submission_type', 'service_advisor', 'technician', 'upload_date']               
 
+class APICacheSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = APICache
+        fields = ['id', 'query', 'data', 'last_updated']
 # class DealershipSerializer(serializers.ModelSerializer):
 #     class Meta:
 #         model = Dealership

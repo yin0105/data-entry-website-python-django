@@ -3,15 +3,15 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.fields import NullBooleanField
 from rest_framework.permissions import IsAuthenticated
 from django.http import JsonResponse
-from .serializers import ClaimTypeSerializer, SubmissionTypeSerializer, ServiceAdvisorSerializer, TechnicianSerializer, ClaimSerializer
-from .models import ClaimType, Dealership, SubmissionType, ServiceAdvisor, Technician, Claim
+from .serializers import ClaimTypeSerializer, SubmissionTypeSerializer, ServiceAdvisorSerializer, TechnicianSerializer, APICacheSerializer
+from .models import ClaimType, Dealership, SubmissionType, ServiceAdvisor, Technician, APICache
 from rest_framework import status
 import os
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import Permission
 from django.shortcuts import get_object_or_404
 from accounts.models import CustomUser
-from datetime import datetime
+from django.utils import timezone
 
 from rest_framework.exceptions import ParseError
 from rest_framework.parsers import FileUploadParser
@@ -22,46 +22,61 @@ from os.path import join, dirname
 from dotenv import load_dotenv
 import boto3
 from botocore.exceptions import ClientError
+import requests
+from datetime import timedelta
 
 
 
 cur_path = dirname(__file__)
 root_path = cur_path[:cur_path.rfind(os.path.sep)]
 load_dotenv(join(root_path, '.env'))
-s3_bucket = os.environ.get('S3_BUCKET')
-print('s3_bucekt = ', s3_bucket)
+x_rapidapi_key = os.environ.get('X_RAPIDAPI_KEY')
+x_rapidapi_host = os.environ.get('X_RAPIDAPI_HOST')
+use_query_string = os.environ.get('USE_QUERY_STRING')
+cache_time = int(os.environ.get('CACHE_TIME'))
+rapidapi_headers = { 
+    'x-rapidapi-key': x_rapidapi_key,
+    'x-rapidapi-host': x_rapidapi_host,
+    'useQueryString': use_query_string,
+  }; 
+print("x_rapidapi_key = ", x_rapidapi_key)
+print("x_rapidapi_host = ", x_rapidapi_host)
+print("use_query_string = ", use_query_string)
+print("cache_time = ", cache_time)
+print("rapidapi_headers = ", rapidapi_headers)
+# print('s3_bucekt = ', s3_bucket)
 
 
-def aws_session(region_name='us-east-1'):
-    return boto3.session.Session(aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
-                                aws_secret_access_key=os.getenv('AWS_ACCESS_KEY_SECRET'),
-                                region_name=region_name)
+# def aws_session(region_name='us-east-1'):
+#     return boto3.session.Session(aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+#                                 aws_secret_access_key=os.getenv('AWS_ACCESS_KEY_SECRET'),
+#                                 region_name=region_name)
 
 
-def upload_file_to_bucket(file_path, folder_name):
-    session = aws_session()
-    s3_resource = session.resource('s3')
-    file_dir, file_name = os.path.split(file_path)
+# def upload_file_to_bucket(file_path, folder_name):
+#     session = aws_session()
+#     s3_resource = session.resource('s3')
+#     file_dir, file_name = os.path.split(file_path)
 
-    bucket = s3_resource.Bucket(s3_bucket)
-    bucket.upload_file(
-      Filename=file_path,
-      Key=folder_name + "/" + file_name,
-      ExtraArgs={'ACL': 'public-read'}
-    )
+#     bucket = s3_resource.Bucket(s3_bucket)
+#     bucket.upload_file(
+#       Filename=file_path,
+#       Key=folder_name + "/" + file_name,
+#       ExtraArgs={'ACL': 'public-read'}
+#     )
 
-    s3_url = f"https://{s3_bucket}.s3.amazonaws.com/{file_name}"
-    return s3_url
+#     s3_url = f"https://{s3_bucket}.s3.amazonaws.com/{file_name}"
+#     return s3_url
 
 
-def delete_folder_from_bucket(folder_name):
-    s3_client = boto3.client('s3')
-    PREFIX = folder_name + '/'
-    response = s3_client.list_objects_v2(Bucket=s3_bucket, Prefix=PREFIX)
+# def delete_folder_from_bucket(folder_name):
+#     s3_client = boto3.client('s3')
+#     PREFIX = folder_name + '/'
+#     response = s3_client.list_objects_v2(Bucket=s3_bucket, Prefix=PREFIX)
 
-    for object in response['Contents']:
-        print('Deleting', object['Key'])
-        s3_client.delete_object(Bucket=s3_bucket, Key=object['Key'])                                
+#     for object in response['Contents']:
+#         print('Deleting', object['Key'])
+#         s3_client.delete_object(Bucket=s3_bucket, Key=object['Key'])                                
 
 # @api_view(["GET"])
 # @csrf_exempt
@@ -188,60 +203,114 @@ def get_technicians(request):
 
 class PdfUploadParser(FileUploadParser):
     media_type = 'pdf/*'
-class ClaimView(APIView):
-    parser_class = (PdfUploadParser,)
+# class ClaimView(APIView):
+#     parser_class = (PdfUploadParser,)
 
+#     def put(self, request, format=None):
+#         if 'file' not in request.data:
+#             raise ParseError("Empty content")
+
+#         f = request.data['file']
+
+#         Claim.pdf.save(f.name, f, save=True)
+#         return Response(status=status.HTTP_201_CREATED)
+
+#     def delete(self, request, format=None):
+#         Claim.pdf.delete(save=True)
+#         return Response(status=status.HTTP_204_NO_CONTENT)
+
+#     # parser_classes = (MultiPartParser, FormParser)
+
+#     def get(self, request, *args, **kwargs):
+#         print([i for i in request.GET])
+#         posts = ""
+#         if "dealership" in request.GET :
+#             posts = Claim.objects.filter(dealership = request.GET["dealership"])
+#         else:
+#             posts = Claim.objects.all()
+#         serializer = ClaimSerializer(posts, many=True)
+#         return Response(serializer.data)
+
+#     def post(self, request, *args, **kwargs):
+#         posts_serializer = ClaimSerializer(data=request.data)
+#         if posts_serializer.is_valid():
+#             posts_serializer.save()
+#             print(posts_serializer.data["pdf"])
+#             pdf = posts_serializer.data["pdf"]
+#             pdf = pdf[pdf.rfind("/")+1:]
+#             print(pdf)
+
+#             # Upload to S3 Bucket
+#             file_path = join(root_path, pdf)
+#             print("#"*50)
+#             print(os.path.sep)
+#             print(root_path, file_path)
+#             print(str(file_path.rfind(os.path.sep)))
+#             file_name = file_path[file_path.rfind(os.path.sep) + 1:]
+#             print(file_name)
+#             print(s3_bucket, file_path, posts_serializer.data["dealership"] + "/" + file_name)
+#             try:
+#                 upload_file_to_bucket(s3_bucket, file_path, posts_serializer.data["dealership"] + "/" + file_name)
+#             except :
+#                 print("Upload error")
+#             return Response(posts_serializer.data, status=status.HTTP_201_CREATED)
+#         else:
+#             print('error', posts_serializer.errors)
+#             return Response(posts_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class APICacheView(APIView):
     def put(self, request, format=None):
-        if 'file' not in request.data:
-            raise ParseError("Empty content")
-
-        f = request.data['file']
-
-        Claim.pdf.save(f.name, f, save=True)
         return Response(status=status.HTTP_201_CREATED)
 
     def delete(self, request, format=None):
-        Claim.pdf.delete(save=True)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    # parser_classes = (MultiPartParser, FormParser)
-
     def get(self, request, *args, **kwargs):
-        print([i for i in request.GET])
-        posts = ""
-        if "dealership" in request.GET :
-            posts = Claim.objects.filter(dealership = request.GET["dealership"])
-        else:
-            posts = Claim.objects.all()
-        serializer = ClaimSerializer(posts, many=True)
+        query = request.GET["query"]
+        now = timezone.now()
+        data = APICache.objects.filter(query = query)
+        if len(data) > 0 and now - data[0].last_updated <= timedelta(minutes=cache_time):
+            serializer = APICacheSerializer(data, many=True)
+            return Response(serializer.data)
+        
+        res = requests.get('https://therundown-therundown-v1.p.rapidapi.com/' + query, headers = rapidapi_headers)
+        api_cache, created = APICache.objects.update_or_create(
+            query=query,
+            defaults={"data": data.content.decode("utf-8")},
+        )
+        # api_cache.save()
+        data = APICache.objects.filter(query = query)
+        serializer = APICacheSerializer(data, many=True)
         return Response(serializer.data)
+        # return Response()
 
     def post(self, request, *args, **kwargs):
-        posts_serializer = ClaimSerializer(data=request.data)
+        posts_serializer = APICacheSerializer(data=request.data)
         if posts_serializer.is_valid():
             posts_serializer.save()
-            print(posts_serializer.data["pdf"])
-            pdf = posts_serializer.data["pdf"]
-            pdf = pdf[pdf.rfind("/")+1:]
-            print(pdf)
+            # print(posts_serializer.data["pdf"])
+            # pdf = posts_serializer.data["pdf"]
+            # pdf = pdf[pdf.rfind("/")+1:]
+            # print(pdf)
 
-            # Upload to S3 Bucket
-            file_path = join(root_path, pdf)
-            print("#"*50)
-            print(os.path.sep)
-            print(root_path, file_path)
-            print(str(file_path.rfind(os.path.sep)))
-            file_name = file_path[file_path.rfind(os.path.sep) + 1:]
-            print(file_name)
-            print(s3_bucket, file_path, posts_serializer.data["dealership"] + "/" + file_name)
-            try:
-                upload_file_to_bucket(s3_bucket, file_path, posts_serializer.data["dealership"] + "/" + file_name)
-            except :
-                print("Upload error")
+            # # Upload to S3 Bucket
+            # file_path = join(root_path, pdf)
+            # print("#"*50)
+            # print(os.path.sep)
+            # print(root_path, file_path)
+            # print(str(file_path.rfind(os.path.sep)))
+            # file_name = file_path[file_path.rfind(os.path.sep) + 1:]
+            # print(file_name)
+            # print(s3_bucket, file_path, posts_serializer.data["dealership"] + "/" + file_name)
+            # try:
+            #     upload_file_to_bucket(s3_bucket, file_path, posts_serializer.data["dealership"] + "/" + file_name)
+            # except :
+                # print("Upload error")
             return Response(posts_serializer.data, status=status.HTTP_201_CREATED)
         else:
             print('error', posts_serializer.errors)
-            return Response(posts_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(posts_serializer.errors, status=status.HTTP_400_BAD_REQUEST)            
 
 #     repair_order = models.IntegerField( help_text='Enter Repair Order Number')
 #     pdf = models.CharField( max_length=100, verbose_name='PDF file name' )
