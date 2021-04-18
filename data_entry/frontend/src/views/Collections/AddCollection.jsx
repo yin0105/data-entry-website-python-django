@@ -34,6 +34,7 @@ class AddCollection extends Component {
             isAPI: false,
             collectionName: '',
             inputList: [],
+            sports: [],
         }
     };
 
@@ -75,6 +76,18 @@ class AddCollection extends Component {
         console.log("inputList =>", this.state.inputList)
     };
 
+    handleSportsChange = (e, index, sport_id) => {        
+        if (this.state.sports.length == 0) {
+            this.sports_ids.map((x) => this.setState(state => ({
+                items: [...state.sports, 0]
+              }))
+            )
+        }
+        let list = [...this.state.sports];
+        list[index] = e.target.checked? sport_id: 0;
+        this.setState({sports: list});
+    };
+
     handleSave = () => {
         if (this.state.collectionName == "") {
             this.createNotification('error', 'Collection name is missing!', 'Please enter collection name.')
@@ -96,12 +109,17 @@ class AddCollection extends Component {
             this.createNotification('error', 'Field Name is missing!', 'Please enter field name.')
             return
         }
+        let sports_list = []
+        this.state.sports.map((x) => {
+            if (x > 0) {sports_list.push(x)}
+        })
+        console.log("sports_list = ", sports_list)
         
         // Add Collection
         let form_data = new FormData();
 
         form_data.append('name', this.state.collectionName);
-        form_data.append('sports', '');
+        form_data.append('sports', sports_list.join("::"));
         form_data.append('field_names', field_names.join("::"));
         form_data.append('field_types', field_types.join("::"));
         let url = '/api/data_entry/collection/';
@@ -160,8 +178,8 @@ class AddCollection extends Component {
                                         <FormText  className="text-center w-100">Choose the sports for this collection</FormText>
                                     </Row>
                                     <Row className="d-flex justify-content-center mb-0">
-                                        {this.sports_ids.map((x, i) => {
-                                            return (<FormCheck inline label={x.sport_name} value={x.sport_id} type="checkbox"/>);
+                                        {this.sports_ids.map((x, i) => {                                            
+                                            return (<FormCheck inline label={x.sport_name} value={x.sport_id} type="checkbox" onClick={e => this.handleSportsChange(e, i, x.sport_id)}/>);
                                         })}
                                     </Row>
                                 </div>
