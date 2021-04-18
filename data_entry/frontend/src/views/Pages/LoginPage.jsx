@@ -35,11 +35,11 @@ class LoginPage extends Component {
     };
   }
 
-  rapidapi_headers = { 
-    'x-rapidapi-key': "b50ad1dda9msh31dcaef409c21c6p15cff7jsnc6410d291bd0",
-    'x-rapidapi-host': "therundown-therundown-v1.p.rapidapi.com",
-    'useQueryString': true,
-  };  
+  // rapidapi_headers = { 
+  //   'x-rapidapi-key': "b50ad1dda9msh31dcaef409c21c6p15cff7jsnc6410d291bd0",
+  //   'x-rapidapi-host': "therundown-therundown-v1.p.rapidapi.com",
+  //   'useQueryString': true,
+  // };  
   
   componentDidMount() {
     setTimeout(
@@ -48,13 +48,6 @@ class LoginPage extends Component {
       }.bind(this),
       700
     ); 
-    setTimeout(() => {
-      axios.get('https://therundown-therundown-v1.p.rapidapi.com/sports', {'headers': this.rapidapi_headers})
-          .then(res => {
-              saveToLocalStorage("sports_ids", res.data)
-          })
-    }, 100);   
-    saveToLocalStorage("rapidapi_headers", this.rapidapi_headers)
   }
 
   handleLogin = e => {
@@ -81,36 +74,20 @@ class LoginPage extends Component {
     this.props.login(username, password)
       .then(
         async(res) => {
-          // saveToLocalStorage("token", )
-            
-          // await axios.get('/api/claim/get_claim_types', {headers})
-          //   .then(res => {
-          //     saveToLocalStorage("claim_types", res.data.claim_types.map(d => ({
-          //       "value" : d.name,
-          //       "label" : d.name
-          //     })))
-          //   })
-          // await axios.get('/api/claim/get_submission_types', {headers})
-          //   .then(res => {
-          //     saveToLocalStorage("submission_types", res.data.submission_types.map(d => ({
-          //       "value" : d.name,
-          //       "label" : d.name
-          //     })))
-          //   });
-          // await axios.get('/api/claim/get_service_advisors', {headers})
-          //   .then(res => {
-          //     saveToLocalStorage("service_advisors", res.data.service_advisor.map(d => ({
-          //       "value" : d.id,
-          //       "label" : d.name
-          //     })))
-          //   });
-          // await axios.get('/api/claim/get_technicians', {headers})
-          //   .then(res => {
-          //     saveToLocalStorage("technicians", res.data.technicians.map(d => ({
-          //       "value" : d.id,
-          //       "label" : d.name
-          //     })))
-          //   });
+          const token = loadFromLocalStorage("token");
+          const headers = { 
+            'Authorization': 'token ' + token,
+          };
+
+          await axios.get('/api/data_entry/api_cache/?query=sports', {'headers': headers})
+          .then(res => {
+            console.log("###########################")
+            console.log(res.data)
+            const sports_ids = JSON.parse(res.data[0].data)
+            console.log(sports_ids)
+            console.log(sports_ids.sports)
+              saveToLocalStorage("sports_ids", sports_ids.sports)
+          });
 
           await this.props.get_userinfo()
             .then(

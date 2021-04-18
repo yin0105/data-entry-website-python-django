@@ -14,6 +14,10 @@ import Card from "components/Card/Card.jsx";
 import Button from "components/CustomButton/CustomButton.jsx";
 import { Link } from "react-router-dom"
 import { loadFromLocalStorage } from "redux/reducers/auth";
+import {NotificationContainer, NotificationManager} from 'react-notifications';
+import 'react-notifications/lib/notifications.css';
+import 'react-notifications/dist/react-notifications'
+import axios from 'axios'
 
 
 const fieldTypeOptions = [
@@ -28,72 +32,17 @@ class AddCollection extends Component {
         super(props);
         this.state = {
             isAPI: false,
+            collectionName: '',
             inputList: [],
         }
     };
 
     sports_ids = loadFromLocalStorage("sports_ids");
+    token = loadFromLocalStorage("token");
 
-    // componentDidMount() {
-    //     // setTimeout(() => {
-    //     //     this.props.rapidapi_key = "b50ad1dda9msh31dcaef409c21c6p15cff7jsnc6410d291bd0";
-    //     //     this.props.rapidapi_host = "therundown-therundown-v1.p.rapidapi.com";
-    //     //     this.props.use_query_string = true;
-    //     //     const headers = { 
-    //     //         'x-rapidapi-key': this.props.rapidapi_key,
-    //     //         'x-rapidapi-host': this.props.rapidapi_host,
-    //     //         'useQueryString': this.props.useQueryString,
-    //     //     };
-    //     //     axios.get('https://therundown-therundown-v1.p.rapidapi.com/sports', {headers})
-    //     //         .then(res => {
-    //     //             const sports_ids = res.data;
-    //     //             this.setState({ sports_ids });
-    //     //         })
-    //     // }, 100);
-    //     this.props.sports_ids = {
-    //         "sports": [
-    //             {
-    //                 "sport_id": 1,
-    //                 "sport_name": "NCAA Football"
-    //             },
-    //             {
-    //                 "sport_id": 2,
-    //                 "sport_name": "NFL"
-    //             },
-    //             {
-    //                 "sport_id": 3,
-    //                 "sport_name": "MLB"
-    //             },
-    //             {
-    //                 "sport_id": 4,
-    //                 "sport_name": "NBA"
-    //             },
-    //             {
-    //                 "sport_id": 5,
-    //                 "sport_name": "NCAA Men's Basketball"
-    //             },
-    //             {
-    //                 "sport_id": 6,
-    //                 "sport_name": "NHL"
-    //             },
-    //             {
-    //                 "sport_id": 7,
-    //                 "sport_name": "UFC/MMA"
-    //             },
-    //             {
-    //                 "sport_id": 8,
-    //                 "sport_name": "WNBA"
-    //             },
-    //             {
-    //                 "sport_id": 9,
-    //                 "sport_name": "CFL"
-    //             },
-    //             {
-    //                 "sport_id": 10,
-    //                 "sport_name": "MLS"
-    //             }
-    //     ]};
-    // }
+    handleCollectionNameChange = (e) => {
+        this.setState({collectionName: e.target.value});
+    };
 
     handleIsAPIChange = e => {
         this.setState({ isAPI: e.target.checked });
@@ -126,7 +75,63 @@ class AddCollection extends Component {
         console.log("inputList =>", this.state.inputList)
     };
 
+    handleSave = () => {
+        if (this.state.collectionName == "") {
+            this.createNotification('error', 'Collection name is missing!', 'Please enter collection name.')
+            return
+        }
+        const list = [...this.state.inputList];
+        let isEmpty = false;
+        let field_names = [], field_types = []
+
+        list.map((x, i) => {
+            if (x.fieldName == "") {
+                isEmpty = true;
+                return
+            }
+            field_names.push(x.fieldName)
+            field_types.push(x.fieldType)
+        })
+        if (isEmpty) {
+            this.createNotification('error', 'Field Name is missing!', 'Please enter field name.')
+            return
+        }
+        
+        // Add Collection
+        let form_data = new FormData();
+
+        form_data.append('name', this.state.collectionName);
+        form_data.append('sports', '');
+        form_data.append('field_names', field_names.join("::"));
+        form_data.append('field_types', field_types.join("::"));
+        let url = '/api/data_entry/collection/';
+        axios.post(url, form_data, {
+            headers: {
+                'Authorization': 'token ' + this.token,
+            }
+        }).then(res => {
+            this.createNotification('success', 'New collection has been added successfully!', '')
+            return
+        }).catch(err => console.log(err))
+    };
+
+    createNotification = (type, title, content) => {
+        switch (type) {
+            case 'info':
+            return NotificationManager.info(content);
+            case 'success':
+            return NotificationManager.success(content, title);
+            case 'warning':
+            return NotificationManager.warning(content, title, 3000);
+            case 'error':
+            return NotificationManager.error(content, title, 5000, () => {
+                alert('callback');
+            });
+        }
+    };
+
     render() {
+        const sports_ids = this.sports_ids
         return (
         <div className="main-content">
             <Container fluid>
@@ -138,7 +143,7 @@ class AddCollection extends Component {
                         <FormLabel>Collection Name: </FormLabel>
                     </Col>
                     <Col md={{ span: 5 }} sm={{ span: 7 }}>
-                        <FormControl placeholder="Enter Collection Name" type="text" />
+                        <FormControl placeholder="Enter Collection Name" type="text" value={this.state.collectionName} onChange={e => this.handleCollectionNameChange(e)}/>
                     </Col>
                 </Row>
                 <Row>
@@ -155,14 +160,9 @@ class AddCollection extends Component {
                                         <FormText  className="text-center w-100">Choose the sports for this collection</FormText>
                                     </Row>
                                     <Row className="d-flex justify-content-center mb-0">
-                                        {this.sports_ids.sports.map((x, i) => {
+                                        {this.sports_ids.map((x, i) => {
                                             return (<FormCheck inline label={x.sport_name} value={x.sport_id} type="checkbox"/>);
                                         })}
-                                        
-                                        {/* <FormCheck inline label="NFL" type="checkbox"/>
-                                        <FormCheck inline label="MLB" type="checkbox"/>
-                                        <FormCheck inline label="NCAAB" type="checkbox"/>
-                                        <FormCheck inline label="NCAAF" type="checkbox"/> */}
                                     </Row>
                                 </div>
                             }
@@ -234,13 +234,14 @@ class AddCollection extends Component {
                                         <Link to="/frontend/admin/collection_list" className="mx-auto btn btn-warning btn-fill">Cancel</Link>
                                     </Col>
                                     <Col md={{ span: 2}} className="d-flex justify-content-center">
-                                        <Button variant="primary" className="btn-fill">Save</Button>
+                                        <Button variant="primary" className="btn-fill" onClick={() => this.handleSave()}>Save</Button>
                                     </Col>
                                 </Row>
                             }
                         />
                     </Col>
                 </Row>
+                <NotificationContainer/>
             </Container>
         </div>
         );

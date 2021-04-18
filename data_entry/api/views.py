@@ -3,8 +3,8 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.fields import NullBooleanField
 from rest_framework.permissions import IsAuthenticated
 from django.http import JsonResponse
-from .serializers import ClaimTypeSerializer, SubmissionTypeSerializer, ServiceAdvisorSerializer, TechnicianSerializer, APICacheSerializer
-from .models import ClaimType, Dealership, SubmissionType, ServiceAdvisor, Technician, APICache
+from .serializers import ClaimTypeSerializer, SubmissionTypeSerializer, ServiceAdvisorSerializer, TechnicianSerializer, APICacheSerializer, CollectionSerializer
+from .models import ClaimType, Dealership, SubmissionType, ServiceAdvisor, Technician, APICache, Collection
 from rest_framework import status
 import os
 from django.core.exceptions import ObjectDoesNotExist
@@ -24,6 +24,8 @@ import boto3
 from botocore.exceptions import ClientError
 import requests
 from datetime import timedelta
+from django.db import models, connection
+
 
 
 
@@ -39,11 +41,6 @@ rapidapi_headers = {
     'x-rapidapi-host': x_rapidapi_host,
     'useQueryString': use_query_string,
   }; 
-print("x_rapidapi_key = ", x_rapidapi_key)
-print("x_rapidapi_host = ", x_rapidapi_host)
-print("use_query_string = ", use_query_string)
-print("cache_time = ", cache_time)
-print("rapidapi_headers = ", rapidapi_headers)
 # print('s3_bucekt = ', s3_bucket)
 
 
@@ -277,68 +274,91 @@ class APICacheView(APIView):
         res = requests.get('https://therundown-therundown-v1.p.rapidapi.com/' + query, headers = rapidapi_headers)
         api_cache, created = APICache.objects.update_or_create(
             query=query,
-            defaults={"data": data.content.decode("utf-8")},
+            defaults={"data": res.content.decode("utf-8")},
         )
-        # api_cache.save()
         data = APICache.objects.filter(query = query)
         serializer = APICacheSerializer(data, many=True)
         return Response(serializer.data)
-        # return Response()
 
     def post(self, request, *args, **kwargs):
         posts_serializer = APICacheSerializer(data=request.data)
         if posts_serializer.is_valid():
             posts_serializer.save()
-            # print(posts_serializer.data["pdf"])
-            # pdf = posts_serializer.data["pdf"]
-            # pdf = pdf[pdf.rfind("/")+1:]
-            # print(pdf)
-
-            # # Upload to S3 Bucket
-            # file_path = join(root_path, pdf)
-            # print("#"*50)
-            # print(os.path.sep)
-            # print(root_path, file_path)
-            # print(str(file_path.rfind(os.path.sep)))
-            # file_name = file_path[file_path.rfind(os.path.sep) + 1:]
-            # print(file_name)
-            # print(s3_bucket, file_path, posts_serializer.data["dealership"] + "/" + file_name)
-            # try:
-            #     upload_file_to_bucket(s3_bucket, file_path, posts_serializer.data["dealership"] + "/" + file_name)
-            # except :
-                # print("Upload error")
             return Response(posts_serializer.data, status=status.HTTP_201_CREATED)
         else:
             print('error', posts_serializer.errors)
-            return Response(posts_serializer.errors, status=status.HTTP_400_BAD_REQUEST)            
-
-#     repair_order = models.IntegerField( help_text='Enter Repair Order Number')
-#     pdf = models.CharField( max_length=100, verbose_name='PDF file name' )
-#     dealership = models.ForeignKey(Dealership, on_delete=models.CASCADE, verbose_name='dealership name', null=True) 
-#     service_advisor = models.ForeignKey(ServiceAdvisor, on_delete=models.CASCADE, verbose_name='service advisor name', null=True) 
-#     technician = models.ForeignKey(Technician, on_delete=models.CASCADE, verbose_name='technician name', null=True) 
-#     claim_type = models.ForeignKey(ClaimType, on_delete=models.CASCADE, verbose_name='claim type', null=True) 
-#     submission_type = models.ForeignKey(SubmissionType, on_delete=models.CASCADE, verbose_name='submission type', null=True)        
+            return Response(posts_serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
 
 
-# @api_view(["POST"])
+class CollectionView(APIView):
+    def put(self, request, format=None):
+        return Response(status=status.HTTP_201_CREATED)
+
+    def delete(self, request, format=None):
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def get(self, request, *args, **kwargs):
+        print([i for i in request.GET])
+        posts = ""
+        if "collection" in request.GET :
+            posts = Collection.objects.filter(name = request.GET["collection"])
+        else:
+            posts = Collection.objects.all()
+        serializer = CollectionSerializer(posts, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, *args, **kwargs):
+        posts_serializer = CollectionSerializer(data=request.data)
+        if posts_serializer.is_valid():
+            posts_serializer.save()
+            print("&"*50)
+            req = request.data
+            print(req["field_names"])
+            collection_name = req["name"]
+            field_names = str(req["field_names"]).split("::")
+            field_types = str(req["field_types"]).split("::")
+            print(field_names[0])
+            sql = "CREATE TABLE `" + "col_" + collection_name + "` (`event_id` VARCHAR(255) NOT NULL, "
+            for (name, type) in zip(field_names, field_types):
+                sql += "`" + name + "` "
+                if type == "numeric":
+                    sql += "FLOAT(11) NOT NULL, "
+                else:
+                    sql += "VARCHAR(255) NOT NULL, "
+            sql += "`col_dt` DATETIME NOT NULL, PRIMARY KEY (`event_id`) ); "
+            print(sql)
+            with connection.cursor() as cursor:
+                try:
+                    cursor.execute(sql)
+                    return Response({"res": "success"})
+                except:
+                    return Response({"res": "fail"})
+            return Response(posts_serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            print('error', posts_serializer.errors)
+            return Response(posts_serializer.errors, status=status.HTTP_400_BAD_REQUEST)                          
+
+
+# @api_view(["GET"])
 # # @csrf_exempt
 # # @permission_classes([IsAuthenticated])
-# def add_dealership(request):
-#     print(request.body)
-#     print(request.POST["name"])
-#     print(request.POST["description"])
-#     print(request.POST.get("description", ""))
-#     # payload = json.loads(request.body)
-#     try:
-#         dealership = Dealership.objects.create(
-#             name=request.POST["name"],
-#             description=request.POST.get("description", ""),
-#         )
-#         print("1")
-#         serializer = DealershipSerializer(dealership)
-#         return JsonResponse({'dealerships': serializer.data}, safe=False, status=status.HTTP_201_CREATED)
-#     except ObjectDoesNotExist as e:
-#         return JsonResponse({'error': str(e)}, safe=False, status=status.HTTP_404_NOT_FOUND)
-#     except Exception:
-#         return JsonResponse({'error': 'Something terrible went wrong'}, safe=False, status=status.HTTP_500_INTERNAL_SERVER_ERROR)    
+# def add_collection(request):
+#     collection_name = request.GET["collection"]
+#     field_names = request.GET.getlist("field_name[]")
+#     field_types = request.GET.getlist("field_type[]")
+#     sql = "CREATE TABLE `" + "col_" + collection_name + "` (`event_id` VARCHAR(255) NOT NULL, "
+#     for (name, type) in zip(field_names, field_types):
+#         sql += "`" + name + "` "
+#         if type == "numeric":
+#             sql += "FLOAT(11) NOT NULL, "
+#         else:
+#             sql += "VARCHAR(255) NOT NULL, "
+#     sql += "PRIMARY KEY (`event_id`) ); "
+#     print(sql)
+#     with connection.cursor() as cursor:
+#         try:
+#             cursor.execute(sql)
+#             return Response({"res": "success"})
+#         except:
+#             return Response({"res": "fail"})
+     

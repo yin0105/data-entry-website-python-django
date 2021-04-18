@@ -20,7 +20,22 @@ class APICache(models.Model):
 
     def save(self, *args, **kwargs):
         self.last_updated = timezone.now()
-        return super(APICache, self).save(*args, **kwargs)          
+        return super(APICache, self).save(*args, **kwargs)
+
+
+class Collection(models.Model):
+    id = models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)
+    name = models.CharField( max_length=30, verbose_name='Collection name', unique=True)
+    sports = models.TextField(max_length=1000, blank=True)
+    field_names = models.TextField(max_length=1000, blank=True)
+    field_types = models.TextField(max_length=1000, blank=True)
+
+    # Metadata
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name                    
 
 # #################################################################
 class ClaimType(models.Model):
