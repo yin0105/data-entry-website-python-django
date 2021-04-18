@@ -11,19 +11,46 @@ import {
 import { Link } from "react-router-dom"
 import Card from "components/Card/Card.jsx";
 import Button from "components/CustomButton/CustomButton.jsx";
+import axios from 'axios'
+import { loadFromLocalStorage } from "redux/reducers/auth";
 
 class CollectionList extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      collections: [],
+    }
+  };
+
+  token = loadFromLocalStorage("token");
+  headers = { 
+    'Authorization': 'token ' + this.token,
+  };
+
+  componentDidMount() {
+    
+    axios.get('/api/data_entry/collection/', {'headers': this.headers})
+      .then(res => {
+        console.log("res = ", res.data)
+        this.setState({ collections: res.data });
+        console.log("this.state.collections = ", this.state.collections)
+      });
+  }
+
+  handleRemoveClick = (col_id, row_index) => {
+    axios.delete('/api/data_entry/collection/?id=' + col_id, {'headers': this.headers})
+      .then(res => {
+        console.log("res = ", res.data)
+        this.setState({ collections: res.data });
+        console.log("this.state.collections = ", this.state.collections)
+      });
+    // const list = [...this.state.inputList];
+    // list.splice(index, 1);
+    // this.setState({inputList: list});
+  }
+
   render() {
     const remove = <Tooltip id="remove">Remove</Tooltip>;
-    const actions = (
-      <td className="td-actions">
-        <OverlayTrigger placement="top" overlay={remove}>
-          <Button simple bsStyle="danger" bsSize="xs">
-            <i className="fa fa-times" />
-          </Button>
-        </OverlayTrigger>
-      </td>
-    );
     return (
       <div className="main-content">
         <Container fluid>
@@ -44,29 +71,27 @@ class CollectionList extends Component {
                       </tr>
                     </thead>
                     <tbody>
-                      <tr>
-                        <td>Andrew Mike</td>
-                        {actions}
-                      </tr>
-                      <tr>
-                        <td>John Doe</td>
-                        {actions}
-                      </tr>
-                      <tr>
-                        <td>Alex Mike</td>
-                        {actions}
-                      </tr>
-                      <tr>
-                        <td>Mike Monday</td>
-                        {actions}
-                      </tr>
+                      {
+                        this.state.collections.map((x,i) => {
+                          return (<tr>
+                            <td>{x.name}</td>
+                            <td className="td-actions">
+                              <OverlayTrigger placement="top" overlay={remove}>
+                                <Button simple bsStyle="danger" bsSize="xs" onClick={() => this.handleRemoveClick(x.id, i)}>
+                                  <i className="fa fa-times" />
+                                </Button>
+                              </OverlayTrigger>
+                            </td>
+                          </tr>)
+                        })
+                      }
                     </tbody>
                   </Table>
                 }
                 legend={
                   <div class="d-flex">
                     <Link to="/frontend/admin/add_collection" className="mx-auto btn btn-primary btn-fill">
-                      Add Collection
+                      Create New Collection
                     </Link>
                   </div>
                 }

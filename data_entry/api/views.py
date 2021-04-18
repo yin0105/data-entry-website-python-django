@@ -291,17 +291,21 @@ class APICacheView(APIView):
 
 
 class CollectionView(APIView):
-    def put(self, request, format=None):
+    def put(self, request, format=None):        
         return Response(status=status.HTTP_201_CREATED)
 
     def delete(self, request, format=None):
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        Collection.objects.filter(id=request.GET["id"]).delete()
+        posts = Collection.objects.all()
+        serializer = CollectionSerializer(posts, many=True)
+        return Response(serializer.data)
+        # return Response(status=status.HTTP_204_NO_CONTENT)
 
     def get(self, request, *args, **kwargs):
         print([i for i in request.GET])
         posts = ""
-        if "collection" in request.GET :
-            posts = Collection.objects.filter(name = request.GET["collection"])
+        if "name" in request.GET :
+            posts = Collection.objects.filter(name = request.GET["name"])
         else:
             posts = Collection.objects.all()
         serializer = CollectionSerializer(posts, many=True)
