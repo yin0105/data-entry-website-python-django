@@ -1,31 +1,31 @@
 from django.db.models.fields import DateTimeField
 from rest_framework import serializers, fields
-from .models import APICache, ClaimType, Collection, SubmissionType, ServiceAdvisor, Technician
+from .models import APICache, Schedule, Collection
 from datetime import datetime
 
-class ClaimTypeSerializer(serializers.ModelSerializer):
+# class ClaimTypeSerializer(serializers.ModelSerializer):
     
-    class Meta:
-        model = ClaimType
-        fields = ['name']
+#     class Meta:
+#         model = ClaimType
+#         fields = ['name']
 
 
-class SubmissionTypeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SubmissionType
-        fields = ['name']
+# class SubmissionTypeSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = SubmissionType
+#         fields = ['name']
 
 
-class ServiceAdvisorSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ServiceAdvisor
-        fields = ['id', 'name']
+# class ServiceAdvisorSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = ServiceAdvisor
+#         fields = ['id', 'name']
 
 
-class TechnicianSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Technician
-        fields = ['id', 'name']
+# class TechnicianSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Technician
+#         fields = ['id', 'name']
 
 
 # class ClaimSerializer(serializers.ModelSerializer):
@@ -45,8 +45,9 @@ class CollectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Collection
         fields = ['id', 'name', 'sports', 'field_names', 'field_types']        
-# class DealershipSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Dealership
-#         fields = ['name', 'description']       
+
+class ScheduleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Schedule
+        fields = ['collection', 'active', 'weekdays', 'time_ranges']       
 

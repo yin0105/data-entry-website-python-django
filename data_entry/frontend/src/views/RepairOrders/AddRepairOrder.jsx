@@ -154,9 +154,7 @@ class AddRepairOrder extends React.Component {
       case 'warning':
         return NotificationManager.warning(content, title, 3000);
       case 'error':
-        return NotificationManager.error(content, title, 5000, () => {
-          alert('callback');
-        });
+        return NotificationManager.error(content, title, 5000);
     }
   };
  

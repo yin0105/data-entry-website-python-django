@@ -27,12 +27,14 @@ class AddCollection extends Component {
   constructor(props) {
     super(props);
     this.state = {
-        isEveryday: false,
-        collections: [],
-        collection: null,
-        // collectionName: '',
-        inputList: [],
-        weekdays: [0, 0, 0, 0, 0, 0, 0],
+      isEveryday: false,
+      isActive: true,
+      collections: [],
+      collection: null,
+      collection_id: null,
+      // collectionName: '',
+      inputList: [],
+      weekdays: [0, 0, 0, 0, 0, 0, 0],
     }
   };
 
@@ -40,6 +42,7 @@ class AddCollection extends Component {
   headers = { 
     'Authorization': 'token ' + this.token,
   };
+  weekdays_names = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
   componentDidMount() {    
     axios.get('/api/data_entry/collection/', {'headers': this.headers})
@@ -55,15 +58,18 @@ class AddCollection extends Component {
     this.setState({ collection });
   }
 
+  handleActiveChange = e => {
+    this.setState({ isActive: e.target.checked });
+  };
+
   handleEverydayChange = e => {
-    console.log("e.target.checked = ", e.target.checked)
     this.setState({ isEveryday: e.target.checked });
-    console.log("isEveryday: ", this.state.isEveryday)
+    let val = e.target.checked? 1: 0
+    this.setState({weekdays: [val, val, val, val, val, val, val]});
   };
 
   handleAddNewField = () => {
     this.setState({inputList: [...this.state.inputList, { start_time: null, due: null, range_start: null, range_end: null }]});
-    console.log("inputList =>", this.state.inputList)
   };
 
   handleRemoveField = index => {
@@ -73,57 +79,81 @@ class AddCollection extends Component {
   };
 
   handleTimeSelectorChange = (e, row_index, col_name) => {
-    console.log("e = ",e, row_index, col_name )
     const list = [...this.state.inputList];
     list[row_index][col_name] = e.value;
     this.setState({inputList: list});
     console.log(this.state.inputList)
   };
 
+  handleWeekdayChange = (e, i) => {
+    const list = [...this.state.weekdays];
+    list[i] = e.target.checked? 1: 0;
+    this.setState({weekdays: list});
+    console.log(this.state.weekdays)
+  };
+
   handleSave = () => {
 
-    // if (this.state.collectionName == "") {
-    //     this.createNotification('error', 'Collection name is missing!', 'Please enter collection name.')
-    //     return
-    // }
-    // const list = [...this.state.inputList];
+    if (this.state.collection == null) {
+      this.createNotification('error', 'Collection name is missing!', 'Please select collection name.')
+      return
+    }
+
+    const weekdays = [...this.state.weekdays];
+    if (weekdays.join("") == "0000000") {
+      this.createNotification('error', 'Weekdays are missing!', 'Please select weekdays.')
+      return
+    }
+
+    const inputList = [...this.state.inputList];
+    
+    if (inputList.length == 0) {
+      this.createNotification('error', 'Time is missing!', 'Please add time to schedule.')
+      return
+    }
     // let isEmpty = false;
     // let field_names = [], field_types = []
 
-    // list.map((x, i) => {
-    //     if (x.fieldName == "") {
-    //         isEmpty = true;
-    //         return
-    //     }
-    //     field_names.push(x.fieldName)
-    //     field_types.push(x.fieldType)
-    // })
-    // if (isEmpty) {
-    //     this.createNotification('error', 'Field Name is missing!', 'Please enter field name.')
-    //     return
-    // }
-    // let sports_list = []
-    // this.state.sports.map((x) => {
-    //     if (x > 0) {sports_list.push(x)}
-    // })
-    // console.log("sports_list = ", sports_list)
-    
-    // // Add Collection
-    // let form_data = new FormData();
-
-    // form_data.append('name', this.state.collectionName);
-    // form_data.append('sports', sports_list.join("::"));
-    // form_data.append('field_names', field_names.join("::"));
-    // form_data.append('field_types', field_types.join("::"));
-    // let url = '/api/data_entry/collection/';
-    // axios.post(url, form_data, {
-    //     headers: {
-    //         'Authorization': 'token ' + this.token,
-    //     }
-    // }).then(res => {
-    //     this.createNotification('success', 'New collection has been added successfully!', '')
-    //     return
-    // }).catch(err => console.log(err))
+    let time_ranges = []
+    inputList.map((x, i) => {
+      if (x.start_time == null) {
+        this.createNotification('error', 'Time is missing!', 'Please select start_time on line ' + String(i + 1))
+        time_ranges = []
+        return
+      }
+      if (x.due == null) {
+        this.createNotification('error', 'Time is missing!', 'Please select due on line ' + String(i + 1))
+        time_ranges = []
+        return
+      }
+      if (x.range_start == null) {
+        this.createNotification('error', 'Time is missing!', 'Please select range_start on line ' + String(i + 1))
+        time_ranges = []
+        return
+      }
+      if (x.range_end == null) {
+        this.createNotification('error', 'Time is missing!', 'Please select range_end on line ' + String(i + 1))
+        time_ranges = []
+        return
+      }
+      time_ranges.push(x.start_time + "/" + x.due + "/" + x.range_start + "/" + x.range_end)
+    })
+    if (time_ranges.length == 0) return
+    let form_data = new FormData();
+    console.log("this.state.collection = ", this.state.collection)
+    form_data.append('collection', this.state.collection.value);
+    form_data.append('active', this.state.isActive? 1: 0);
+    form_data.append('weekdays', weekdays.join(""));
+    form_data.append('time_ranges', time_ranges.join("::"));
+    let url = '/api/data_entry/schedule/';
+    axios.post(url, form_data, {
+        headers: {
+            'Authorization': 'token ' + this.token,
+        }
+    }).then(res => {
+        this.createNotification('success', 'New collection has been added successfully!', '')
+        return
+    }).catch(err => this.createNotification('error', err, ''))
   };
 
   TimeSelector = props => {
@@ -148,14 +178,27 @@ class AddCollection extends Component {
     );
   }
 
+  createNotification = (type, title, content) => {
+    switch (type) {
+        case 'info':
+        return NotificationManager.info(content);
+        case 'success':
+        return NotificationManager.success(content, title);
+        case 'warning':
+        return NotificationManager.warning(content, title, 3000);
+        case 'error':
+        return NotificationManager.error(content, title, 5000);
+    }
+  };
+
   render() {
-    const { collection } = this.state;
+    const { collection, isActive } = this.state;
 
     return (
       <div className="main-content">
         <Container fluid>
             <div className="d-flex">
-                <FormLabel className="mx-auto h1 "><b>Add Schedule</b></FormLabel>
+                <FormLabel className="mx-auto h1 "><b>Create New Schedule</b></FormLabel>
             </div>
             <Row className="align-items-center mb-4">
                 <Col md={{ span: 2, offset: 2 }} sm={{ span: 5 }} className="text-right">
@@ -167,6 +210,11 @@ class AddCollection extends Component {
             </Row>            
             <Row>
                 <Col md={{ span: 3, offset: 2 }} sm={{ span: 5 }}>
+                    <FormCheck inline label="Active" type="checkbox" checked={isActive} onChange={e => this.handleActiveChange(e)}/>
+                </Col>
+            </Row>
+            <Row>
+                <Col md={{ span: 3, offset: 2 }} sm={{ span: 5 }}>
                     <FormCheck inline label="Run Everyday" type="checkbox" onChange={e => this.handleEverydayChange(e)}/>
                 </Col>
             </Row>
@@ -175,13 +223,9 @@ class AddCollection extends Component {
               <Row className="d-flex">
                   <Row className="mx-auto">
                       <FormText>Select Weekdays : </FormText>
-                      <FormCheck inline label="Monday" type="checkbox"/>
-                      <FormCheck inline label="Tuesday" type="checkbox"/>
-                      <FormCheck inline label="Wendesday" type="checkbox"/>
-                      <FormCheck inline label="Thirsday" type="checkbox"/>
-                      <FormCheck inline label="Friday" type="checkbox"/>
-                      <FormCheck inline label="Saturday" type="checkbox"/>
-                      <FormCheck inline label="Sunday" type="checkbox"/>
+                      {this.weekdays_names.map((x, i) => {
+                        return <FormCheck inline label={x} type="checkbox" onClick={e => this.handleWeekdayChange(e, i)}/>
+                      })}
                   </Row>
               </Row>
             }
@@ -252,6 +296,7 @@ class AddCollection extends Component {
                   }
               />
             </Row>
+            <NotificationContainer/>
         </Container>
       </div>
     );

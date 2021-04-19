@@ -35,85 +35,99 @@ class Collection(models.Model):
         ordering = ['name']
 
     def __str__(self):
-        return self.name                    
+        return self.name  
+
+
+class Schedule(models.Model):
+    collection = models.ForeignKey(Collection, on_delete=models.CASCADE, verbose_name='collection id') 
+    active = models.BooleanField(default=False)
+    weekdays = models.CharField( max_length=30, verbose_name='weekdays', unique=True)
+    time_ranges = models.TextField(max_length=1000, blank=True)
+
+    # Metadata
+    class Meta:
+        ordering = ['collection']
+
+    def __str__(self):
+        return self.collection                           
 
 # #################################################################
-class ClaimType(models.Model):
-    name = models.CharField( help_text='Required. 30 characters or fewer.',
-        max_length=30, verbose_name='claim type', primary_key=True)
-    description = models.TextField(max_length=1000, help_text='Enter a brief description of the claim type')
+# class ClaimType(models.Model):
+#     name = models.CharField( help_text='Required. 30 characters or fewer.',
+#         max_length=30, verbose_name='claim type', primary_key=True)
+#     description = models.TextField(max_length=1000, help_text='Enter a brief description of the claim type')
 
-    # Metadata
-    class Meta:
-        ordering = ['name']
+#     # Metadata
+#     class Meta:
+#         ordering = ['name']
 
-    def __str__(self):
-        return self.name        
-
-
-class SubmissionType(models.Model):
-    name = models.CharField( help_text='Required. 30 characters or fewer.', 
-        max_length=30, verbose_name='submission type', primary_key=True)
-    description = models.TextField(max_length=1000, help_text='Enter a brief description of the submission type')
-
-    # Metadata
-    class Meta:
-        ordering = ['name']
-
-    def __str__(self):
-        return self.name
+#     def __str__(self):
+#         return self.name        
 
 
-class Status(models.Model):
-    name = models.CharField( help_text='Required. 30 characters or fewer', 
-        max_length=30, verbose_name='status', primary_key=True)
-    description = models.TextField(max_length=1000, help_text='Enter a brief description of the status')
+# class SubmissionType(models.Model):
+#     name = models.CharField( help_text='Required. 30 characters or fewer.', 
+#         max_length=30, verbose_name='submission type', primary_key=True)
+#     description = models.TextField(max_length=1000, help_text='Enter a brief description of the submission type')
 
-    # Metadata
-    class Meta:
-        ordering = ['name']
+#     # Metadata
+#     class Meta:
+#         ordering = ['name']
 
-    def __str__(self):
-        return self.name  
+#     def __str__(self):
+#         return self.name
+
+
+# class Status(models.Model):
+#     name = models.CharField( help_text='Required. 30 characters or fewer', 
+#         max_length=30, verbose_name='status', primary_key=True)
+#     description = models.TextField(max_length=1000, help_text='Enter a brief description of the status')
+
+#     # Metadata
+#     class Meta:
+#         ordering = ['name']
+
+#     def __str__(self):
+#         return self.name  
 
         
-class Dealership(models.Model):
-    name = models.CharField( help_text='Required. 30 characters or fewer.', 
-        max_length=30, verbose_name='dealership name', primary_key=True)
-    description = models.TextField(max_length=1000, help_text='Enter a brief description of the dealership')
+# class Dealership(models.Model):
+#     name = models.CharField( help_text='Required. 30 characters or fewer.', 
+#         max_length=30, verbose_name='dealership name', primary_key=True)
+#     description = models.TextField(max_length=1000, help_text='Enter a brief description of the dealership')
 
-    # Metadata
-    class Meta:
-        ordering = ['name']
+#     # Metadata
+#     class Meta:
+#         ordering = ['name']
 
-    def __str__(self):
-        return self.name  
-
-
-class ServiceAdvisor(models.Model):
-    id = models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)
-    name = models.CharField( help_text='Required. 30 characters or fewer.',
-        max_length=30, verbose_name='service advisor name', )
-
-    # Metadata
-    class Meta:
-        ordering = ['name']
-
-    def __str__(self):
-        return self.name 
+#     def __str__(self):
+#         return self.name  
 
 
-class Technician(models.Model):
-    id = models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)
-    name = models.CharField( help_text='Required. 30 characters or fewer.',
-        max_length=30, verbose_name='technician name', )
+# class ServiceAdvisor(models.Model):
+#     id = models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)
+#     name = models.CharField( help_text='Required. 30 characters or fewer.',
+#         max_length=30, verbose_name='service advisor name', )
 
-    # Metadata
-    class Meta:
-        ordering = ['name']
+#     # Metadata
+#     class Meta:
+#         ordering = ['name']
 
-    def __str__(self):
-        return self.name     
+#     def __str__(self):
+#         return self.name 
+
+
+# class Technician(models.Model):
+#     id = models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)
+#     name = models.CharField( help_text='Required. 30 characters or fewer.',
+#         max_length=30, verbose_name='technician name', )
+
+#     # Metadata
+#     class Meta:
+#         ordering = ['name']
+
+#     def __str__(self):
+#         return self.name     
                                     
 
 # class Claim(models.Model):

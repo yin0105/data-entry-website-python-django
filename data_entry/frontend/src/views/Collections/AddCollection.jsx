@@ -130,7 +130,7 @@ class AddCollection extends Component {
         }).then(res => {
             this.createNotification('success', 'New collection has been added successfully!', '')
             return
-        }).catch(err => console.log(err))
+        }).catch(err => this.createNotification('error', err, ''))
     };
 
     createNotification = (type, title, content) => {
@@ -142,9 +142,7 @@ class AddCollection extends Component {
             case 'warning':
             return NotificationManager.warning(content, title, 3000);
             case 'error':
-            return NotificationManager.error(content, title, 5000, () => {
-                alert('callback');
-            });
+            return NotificationManager.error(content, title, 5000);
         }
     };
 
@@ -154,7 +152,7 @@ class AddCollection extends Component {
         <div className="main-content">
             <Container fluid>
                 <div className="d-flex">
-                    <FormLabel className="mx-auto h1 "><b>Add Collection</b></FormLabel>
+                    <FormLabel className="mx-auto h1 "><b>Create New Collection</b></FormLabel>
                 </div>
                 <Row className="align-items-center mb-4">
                     <Col md={{ span: 3, offset: 2 }} sm={{ span: 5 }} className="text-right">
