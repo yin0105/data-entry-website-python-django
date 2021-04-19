@@ -150,3 +150,16 @@ td, th {
 .container_login .card {
     min-width: 300px;
 }
+
+.react-confirm-alert-body h1 {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.react-confirm-alert-button-group {
+    justify-content: center;
+}
+
+.time_selector .container-fluid .row > div {
+    width: 120px !important;
+}

@@ -13,6 +13,8 @@ import Card from "components/Card/Card.jsx";
 import Button from "components/CustomButton/CustomButton.jsx";
 import axios from 'axios'
 import { loadFromLocalStorage } from "redux/reducers/auth";
+import { confirmAlert } from 'react-confirm-alert'; // Import
+import 'react-confirm-alert/src/react-confirm-alert.css'; // Import css
 
 class CollectionList extends Component {
   constructor(props) {
@@ -31,22 +33,33 @@ class CollectionList extends Component {
     
     axios.get('/api/data_entry/collection/', {'headers': this.headers})
       .then(res => {
-        console.log("res = ", res.data)
         this.setState({ collections: res.data });
-        console.log("this.state.collections = ", this.state.collections)
       });
   }
 
+  onConfirm = () => {
+    console.log("onConfirm()");
+  }
+
   handleRemoveClick = (col_id, row_index) => {
-    axios.delete('/api/data_entry/collection/?id=' + col_id, {'headers': this.headers})
-      .then(res => {
-        console.log("res = ", res.data)
-        this.setState({ collections: res.data });
-        console.log("this.state.collections = ", this.state.collections)
-      });
-    // const list = [...this.state.inputList];
-    // list.splice(index, 1);
-    // this.setState({inputList: list});
+    confirmAlert({
+      title: 'Confirm to remove',
+      message: 'Are you sure to remove this collection.',
+      buttons: [
+        {
+          label: 'Yes',
+          onClick: () => axios.delete('/api/data_entry/collection/?id=' + col_id, {'headers': this.headers})
+            .then(res => {
+              console.log("res = ", res.data)
+              this.setState({ collections: res.data });
+              console.log("this.state.collections = ", this.state.collections)
+            })
+        },
+        {
+          label: 'No',
+        }
+      ]
+    });
   }
 
   render() {
