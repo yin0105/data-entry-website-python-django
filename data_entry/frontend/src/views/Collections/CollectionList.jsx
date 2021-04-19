@@ -29,8 +29,7 @@ class CollectionList extends Component {
     'Authorization': 'token ' + this.token,
   };
 
-  componentDidMount() {
-    
+  componentDidMount() {    
     axios.get('/api/data_entry/collection/', {'headers': this.headers})
       .then(res => {
         this.setState({ collections: res.data });

@@ -47,7 +47,19 @@ class CollectionSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'sports', 'field_names', 'field_types']        
 
 class ScheduleSerializer(serializers.ModelSerializer):
+     
     class Meta:
         model = Schedule
-        fields = ['collection', 'active', 'weekdays', 'time_ranges']       
+        fields = ['id', 'collection', 'active', 'weekdays', 'time_ranges']  
+
+
+class ScheduleCollectionSerializer(serializers.ModelSerializer):
+    collection_name = serializers.SerializerMethodField()
+    
+    def get_collection_name(self, obj):
+        return Collection.objects.filter(id=obj.collection_id).first().name
+    class Meta:
+        model = Schedule
+        fields = '__all__'  
+        ordering = ['collection_name']            
 

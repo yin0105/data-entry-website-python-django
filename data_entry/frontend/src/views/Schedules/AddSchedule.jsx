@@ -151,9 +151,10 @@ class AddCollection extends Component {
             'Authorization': 'token ' + this.token,
         }
     }).then(res => {
-        this.createNotification('success', 'New collection has been added successfully!', '')
+      console.log("res = ", res[0])
+        this.createNotification('success', 'New schedule has been added successfully!', '')
         return
-    }).catch(err => this.createNotification('error', err, ''))
+    }).catch(err => {console.log("Error"); console.log(err)})
   };
 
   TimeSelector = props => {
@@ -276,9 +277,9 @@ class AddCollection extends Component {
                               </Row>
                             </Col>
                               
-                              <Col md={{ span: 1 }} className="justify-content-center d-flex">
-                                  <Button variant="info" className="btn-fill" onClick={() => this.handleRemoveField(i)}>Remove</Button>
-                              </Col>
+                            <Col md={{ span: 1 }} className="justify-content-center d-flex">
+                                <Button variant="info" className="btn-fill" onClick={() => this.handleRemoveField(i)}>Remove</Button>
+                            </Col>
                           </Row>
                         )
                       })}

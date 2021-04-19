@@ -2,8 +2,8 @@ from rest_framework.decorators import api_view, permission_classes
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.fields import NullBooleanField
 from rest_framework.permissions import IsAuthenticated
-from django.http import JsonResponse
-from .serializers import APICacheSerializer, CollectionSerializer, ScheduleSerializer
+from django.http import JsonResponse, QueryDict
+from .serializers import APICacheSerializer, CollectionSerializer, ScheduleSerializer, ScheduleCollectionSerializer
 from .models import APICache, Collection, Schedule
 from rest_framework import status
 import os
@@ -25,6 +25,7 @@ from botocore.exceptions import ClientError
 import requests
 from datetime import timedelta
 from django.db import models, connection
+# from django.http.request import QueryDict
 
 
 
@@ -130,8 +131,22 @@ class CollectionView(APIView):
 
 
 class ScheduleView(APIView):
-    def put(self, request, format=None):        
-        return Response(status=status.HTTP_201_CREATED)
+    def put(self, request, format=None):  
+        instance = get_object_or_404(Schedule.objects.all(), id=request.data["id"])
+
+        serializer = ScheduleCollectionSerializer(instance, data=request.data)
+
+        # validate and update
+        if serializer.is_valid():
+            serializer.save()
+            serializer_dict = serializer.data
+            serializer_dict["message"] = "Schedule updated successfully."
+            print(serializer_dict)
+            return Response(serializer_dict, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST)      
+        # return Response(status=status.HTTP_201_CREATED)
 
     def delete(self, request, format=None):
         Schedule.objects.filter(id=request.GET["id"]).delete()
@@ -146,11 +161,28 @@ class ScheduleView(APIView):
         if "name" in request.GET :
             posts = Schedule.objects.filter(name = request.GET["name"])
         else:
-            posts = Schedule.objects.all()
-        serializer = ScheduleSerializer(posts, many=True)
+            posts = Schedule.objects.select_related('collection').all()
+        serializer = ScheduleCollectionSerializer(posts, many=True)
         return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
+        # queryDict = request.data
+        # # myDict = dict(queryDict.iterlists())
+        # myDict = dict(request.POST.lists())
+        # # myDict = { key: queryDict.getlist(key) for key in queryDict.fromkeys()}
+        # print("#"*50, myDict['collection'])
+        # myDict["collection"] = id = int(myDict["collection"][0])
+        # if myDict["active"][0] == "1":
+        #     myDict["active"] = True
+        # else:
+        #     myDict["active"] = False
+        # myDict["weekdays"] = myDict["weekdays"][0]
+        # myDict["time_ranges"] = myDict["time_ranges"][0]
+
+
+        # query_dict = QueryDict('', mutable=True)
+        # query_dict.update(myDict)
+        # posts_serializer = ScheduleSerializer(data=query_dict)
         posts_serializer = ScheduleSerializer(data=request.data)
         if posts_serializer.is_valid():
             posts_serializer.save()

@@ -39,9 +39,10 @@ class Collection(models.Model):
 
 
 class Schedule(models.Model):
-    collection = models.ForeignKey(Collection, on_delete=models.CASCADE, verbose_name='collection id') 
+    id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
+    collection = models.ForeignKey(Collection, on_delete=models.CASCADE, verbose_name='collection id', unique=True) 
     active = models.BooleanField(default=False)
-    weekdays = models.CharField( max_length=30, verbose_name='weekdays', unique=True)
+    weekdays = models.CharField( max_length=30, verbose_name='weekdays')
     time_ranges = models.TextField(max_length=1000, blank=True)
 
     # Metadata
