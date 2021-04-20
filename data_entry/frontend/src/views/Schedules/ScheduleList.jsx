@@ -119,13 +119,19 @@ class ScheduleList extends Component {
                     <tbody>
                       {
                         this.state.schedules.map((x,i) => {
-                          let times = x.time_ranges.split("/")
+                          let start_time = '', due = '', collect = ''
+                          x.time_ranges.split("::").map((row, j) => {
+                            let times = row.split("/")
+                            start_time += (start_time != ''? '<br>': '') + '<span>' + times[0] + '</span>'
+                            due += (due != ''? '<br>': '') + '<span>' + times[1] + '</span>'
+                            collect += (collect != ''? '<br>': '') + '<span>' + times[2] + ' - ' + times[3] + '</span>'
+                          })
                           console.log("x.active = ", x.active)
                           return (<tr>
                             <td>{x.collection_name}</td>
-                            <td>{times[0]}</td>
-                            <td>{times[1]}</td>
-                            <td>{times[2]} - {times[3]}</td>
+                            <td dangerouslySetInnerHTML={{__html: start_time}} />
+                            <td dangerouslySetInnerHTML={{__html: due}} />
+                            <td dangerouslySetInnerHTML={{__html: collect}} />
                             <td className="td-actions">
                               <OverlayTrigger placement="top" overlay={edit}>
                                 <Button simple bsStyle="success" bsSize="xs" onClick={() => this.handleEditSchedule(x)}>
