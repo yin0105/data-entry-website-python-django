@@ -34,12 +34,6 @@ class LoginPage extends Component {
       }
     };
   }
-
-  // rapidapi_headers = { 
-  //   'x-rapidapi-key': "b50ad1dda9msh31dcaef409c21c6p15cff7jsnc6410d291bd0",
-  //   'x-rapidapi-host': "therundown-therundown-v1.p.rapidapi.com",
-  //   'useQueryString': true,
-  // };  
   
   componentDidMount() {
     setTimeout(

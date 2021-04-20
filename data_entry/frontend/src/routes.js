@@ -3,7 +3,7 @@ import LogoutPage from "views/Pages/LogoutPage";
 import RegisterPage from "views/Pages/RegisterPage";
 import ScheduleStatus from "views/Schedules/ScheduleStatus";
 import ScheduleList from "views/Schedules/ScheduleList";
-import ScheduleListUser from "views/Schedules/ScheduleListUser";
+import ToDoList from "views/Schedules/ToDoList";
 import AddSchedule from "views/Schedules/AddSchedule";
 import UpdateSchedule from "views/Schedules/UpdateSchedule";
 import CollectionList from "views/Collections/CollectionList";
@@ -73,17 +73,17 @@ var routes = [
     component: ScheduleList
   },    
   {
-    path: "/home",
-    layout: "/frontend/user",
-    name: "ScheduleListUser",
-    icon: "pe-7s-date",
+    path: "/dashboard",
+    layout: "/frontend/data_collector",
+    name: "Home",
+    icon: "pe-7s-graph",
     redirect: true,
     category: ["data_collector"],
-    component: ScheduleListUser
+    component: ToDoList
   },
   {
     path: "/collection_page",
-    layout: "/frontend/user",
+    layout: "/frontend/data_collector",
     name: "CollectionPage",
     icon: "pe-7s-date",
     redirect: true,

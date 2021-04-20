@@ -37,6 +37,7 @@ x_rapidapi_key = os.environ.get('X_RAPIDAPI_KEY')
 x_rapidapi_host = os.environ.get('X_RAPIDAPI_HOST')
 use_query_string = os.environ.get('USE_QUERY_STRING')
 cache_time = int(os.environ.get('CACHE_TIME'))
+pre_time = int(os.environ.get('PRE_TIME'))
 rapidapi_headers = { 
     'x-rapidapi-key': x_rapidapi_key,
     'x-rapidapi-host': x_rapidapi_host,

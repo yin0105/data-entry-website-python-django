@@ -29,6 +29,7 @@ class CustomButton extends Component {
       dribbble,
       reddit,
       stumbleupon,
+      mx_auto,
       ...rest
     } = this.props;
 
@@ -52,7 +53,8 @@ class CustomButton extends Component {
       "btn-social btn-behance": behance,
       "btn-social btn-dribbble": dribbble,
       "btn-social btn-reddit": reddit,
-      "btn-social btn-stumbleupon": stumbleupon
+      "btn-social btn-stumbleupon": stumbleupon,
+      "mx-auto": mx_auto
     });
 
     return <Button className={btnClasses} {...rest} />;
