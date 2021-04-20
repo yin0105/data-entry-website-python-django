@@ -15,12 +15,13 @@ import Switch from "react-bootstrap-switch";
 import Card from "components/Card/Card.jsx";
 import Button from "components/CustomButton/CustomButton.jsx";
 import axios from 'axios'
-import { loadFromLocalStorage } from "redux/reducers/auth";
+import { loadFromLocalStorage, saveToLocalStorage } from "redux/reducers/auth";
 import { confirmAlert } from 'react-confirm-alert'; // Import
 import 'react-confirm-alert/src/react-confirm-alert.css'; // Import css
 import {NotificationContainer, NotificationManager} from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
 import 'react-notifications/dist/react-notifications'
+import {Redirect} from 'react-router-dom';
 
 
 class ScheduleList extends Component {
@@ -28,6 +29,7 @@ class ScheduleList extends Component {
     super(props);
     this.state = {
       schedules: [],
+      redirect: null,
     }
   };
 
@@ -59,24 +61,17 @@ class ScheduleList extends Component {
             'Authorization': 'token ' + this.token,
         }
     }).then(res => {
-      console.log("res = ", res)
+      console.log("res = ", res[0])
         this.createNotification('success', 'Schedule has been updated successfully!', '')
         return
     }).catch(err => {console.log("Error"); console.log(err)})
   }
 
-  createNotification = (type, title, content) => {
-    switch (type) {
-        case 'info':
-        return NotificationManager.info(content);
-        case 'success':
-        return NotificationManager.success(content, title);
-        case 'warning':
-        return NotificationManager.warning(content, title, 3000);
-        case 'error':
-        return NotificationManager.error(content, title, 5000);
-    }
-  };
+  handleEditSchedule = x => {
+    this.setState({redirect: "/frontend/admin/edit_schedule"})
+    saveToLocalStorage("collection", x)
+    console.log("x = ",x)
+  }
 
   render() {
     const edit = <Tooltip id="edit">Edit Schedule</Tooltip>;
@@ -95,6 +90,9 @@ class ScheduleList extends Component {
         </OverlayTrigger>
       </td>
     );
+    if (this.state.redirect) {
+      return <Redirect to={this.state.redirect} />
+    }
     return (
       <div className="main-content">
         <Container fluid>
@@ -128,7 +126,18 @@ class ScheduleList extends Component {
                             <td>{times[0]}</td>
                             <td>{times[1]}</td>
                             <td>{times[2]} - {times[3]}</td>
-                            {actions}
+                            <td className="td-actions">
+                              <OverlayTrigger placement="top" overlay={edit}>
+                                <Button simple bsStyle="success" bsSize="xs" onClick={() => this.handleEditSchedule(x)}>
+                                  <i className="fa fa-edit" />
+                                </Button>
+                              </OverlayTrigger>
+                              <OverlayTrigger placement="top" overlay={remove}>
+                                <Button simple bsStyle="danger" bsSize="xs">
+                                  <i className="fa fa-times" />
+                                </Button>
+                              </OverlayTrigger>
+                            </td>
                             <td>
                               <Switch onText="" offText="" defaultValue={x.active} onChange={() => this.handleActiveChange(x)} />
                             </td>
@@ -147,7 +156,6 @@ class ScheduleList extends Component {
               />
             </Col>
           </Row>
-          <NotificationContainer/>
         </Container>
       </div>
     );

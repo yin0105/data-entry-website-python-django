@@ -5,6 +5,7 @@ import ScheduleStatus from "views/Schedules/ScheduleStatus";
 import ScheduleList from "views/Schedules/ScheduleList";
 import ScheduleListUser from "views/Schedules/ScheduleListUser";
 import AddSchedule from "views/Schedules/AddSchedule";
+import UpdateSchedule from "views/Schedules/UpdateSchedule";
 import CollectionList from "views/Collections/CollectionList";
 import CollectionPage from "views/Collections/CollectionPage";
 import AddCollection from "views/Collections/AddCollection";
@@ -53,6 +54,15 @@ var routes = [
     category: [],
     redirect: true,
     component: AddSchedule
+  },
+  {
+    path: "/edit_schedule",
+    layout: "/frontend/admin",
+    name: "Edit Schedule",
+    mini: "ES",
+    category: [],
+    redirect: true,
+    component: UpdateSchedule
   },
   {
     path: "/charts",
