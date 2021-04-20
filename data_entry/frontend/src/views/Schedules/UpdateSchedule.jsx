@@ -98,12 +98,6 @@ class UpdateSchedule extends Component {
   };
 
   handleSave = () => {
-
-    if (this.state.collection == null) {
-      this.createNotification('error', 'Collection name is missing!', 'Please select collection name.')
-      return
-    }
-
     const weekdays = [...this.state.weekdays];
     if (weekdays.join("") == "0000000") {
       this.createNotification('error', 'Weekdays are missing!', 'Please select weekdays.')
@@ -143,19 +137,19 @@ class UpdateSchedule extends Component {
     })
     if (time_ranges.length == 0) return
     let form_data = new FormData();
-    console.log("this.state.collection = ", this.state.collection)
-    form_data.append('collection', this.state.collection.value);
+    form_data.append('id', this.curCollection.id);
+    form_data.append('collection', this.curCollection.collection);
     form_data.append('active', this.state.isActive? 1: 0);
     form_data.append('weekdays', weekdays.join(""));
     form_data.append('time_ranges', time_ranges.join("::"));
     let url = '/api/data_entry/schedule/';
-    axios.post(url, form_data, {
+    axios.put(url, form_data, {
         headers: {
             'Authorization': 'token ' + this.token,
         }
     }).then(res => {
       console.log("res = ", res[0])
-        this.createNotification('success', 'New schedule has been added successfully!', '')
+        this.createNotification('success', 'Schedule has been updated successfully!', '')
         return
     }).catch(err => {console.log("Error"); console.log(err)})
   };
@@ -171,7 +165,6 @@ class UpdateSchedule extends Component {
             list.push({value: tt, label: tt})
         }
     }
-    console.log("val_list[col_name] = ", val_list[row_index][col_name], this.state.inputList[row_index][col_name])
     return (
       <div className="time_selector">
           <Container fluid>
