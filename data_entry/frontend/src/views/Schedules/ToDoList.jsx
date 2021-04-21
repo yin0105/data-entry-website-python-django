@@ -44,6 +44,7 @@ class ToDoList extends Component {
     axios.get('/api/data_entry/schedule/', {'headers': this.headers})
       .then(res => {
         this.setState({ schedules: res.data });
+        console.log("this.state.schedule = ", this.state.schedules)
         this.filterToDoList()
         var intervalId = setInterval(this.filterToDoList, 10000);
       });
@@ -51,13 +52,14 @@ class ToDoList extends Component {
 
   filterToDoList = () => {
     const d = new Date();
-    const weekday = d.getUTCDay();
+    let weekday = d.getUTCDay();
+    weekday = weekday == 0? 7: weekday
     const timer = d.getUTCHours() * 3600 + d.getUTCMinutes() * 60 + d.getUTCSeconds()
     let filteredSchedules = []
     this.state.schedules.map((schedule) => {
       let isDisplay = false
       let selectedTimeRange = ""
-      schedule.time_ranges.split("::").map((time_range) => {
+      schedule.weekdays[weekday - 1] == "1" && schedule.time_ranges.split("::").map((time_range) => {
         if (isDisplay) return
         const start_time = time_range.split("/")[0]
         let start_timer = 0
@@ -105,13 +107,14 @@ class ToDoList extends Component {
     }).catch(err => {console.log("Error"); console.log(err)})
   }
 
-  gotoCollect = xx => {
+  gotoCollect = async(xx) => {
+    console.log("gotoCollect()")
     let ok = false
     let form_data = new FormData();
     let url = '/api/data_entry/schedule/';
     this.state.schedules.map((x) => {
       if (ok) return
-      if (x.id = xx.id) {
+      if (x.id == xx.id) {
         form_data.append('id', x.id);
         form_data.append('collection', x.collection);
         form_data.append('active', x.active);
@@ -123,17 +126,21 @@ class ToDoList extends Component {
       }
     })
     if (ok) {
-      axios.put(url, form_data, {
+      await axios.put(url, form_data, {
         headers: {
             'Authorization': 'token ' + this.token,
         }
-      }).then(res => {
+      }).then(async (res) => {
         console.log("res = ", res)
-        axios.get('/api/data_entry/collection/?name=' + xx.collection_name, {'headers': this.headers})
+        await axios.get('/api/data_entry/collection/?name=' + xx.collection_name, {headers: this.headers})
         .then(res => {
+          console.log("res_2 = ", res)
           let collectionToRedirect = { ...res.data[0], time_ranges: xx.time_ranges }
-          this.setState({redirect: "/frontend/user/collection_page"})
           saveToLocalStorage("collection", collectionToRedirect)
+          console.log("col = ", collectionToRedirect)
+          this.setState({redirect: "/frontend/user/collection_page"})
+          console.log("this.state.redirect = " , this.state.redirect)
+          
         });
       }).catch(err => {console.log("Error"); console.log(err)})
     }

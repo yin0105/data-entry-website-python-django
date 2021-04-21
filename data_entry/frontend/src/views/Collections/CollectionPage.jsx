@@ -34,6 +34,7 @@ import Card from "components/Card/Card.jsx";
 import Button from "components/CustomButton/CustomButton.jsx";
 import axios from 'axios'
 import { loadFromLocalStorage, saveToLocalStorage } from "redux/reducers/auth";
+import Select from 'react-select'
 import { confirmAlert } from 'react-confirm-alert'; // Import
 import 'react-confirm-alert/src/react-confirm-alert.css'; // Import css
 import {NotificationContainer, NotificationManager} from 'react-notifications';
@@ -47,12 +48,16 @@ class CollectionPage extends Component {
     this.state = {
       range_start: '',
       range_end: '',
+      field_names: [],
+      field_types: [],
+      events: [],
       redirect: null,
     }
   };
 
   token = loadFromLocalStorage("token");
   collection = loadFromLocalStorage("collection")
+  sports_ids = loadFromLocalStorage("sports_ids");
   
   headers = { 
     'Authorization': 'token ' + this.token,
@@ -62,6 +67,71 @@ class CollectionPage extends Component {
     const times = this.collection.time_ranges.split("/")
     this.setState({range_start: times[2]})
     this.setState({range_end: times[3]})
+    this.setState({field_names: this.collection.field_names.split("::")})
+    this.setState({field_types: this.collection.field_types.split("::")})
+    this.getEvents()
+  }
+
+  getEvents = () => {
+    let list = []
+    this.setState({events: list})
+    const d = new Date();
+    let today = String(d.getUTCFullYear()) + "-" + String(d.getUTCMonth() + 1) + "-" + String(d.getUTCDate())
+    console.log("today = ", today)
+    this.collection.sports.split("::").map((x) => {
+      let s_name = null
+      this.sports_ids.map((s) => {
+        if (s_name != null) return
+        console.log("sport_id, x = ", s.sport_id, x)
+        if (s.sport_id == x) {
+          s_name = s.sport_name
+          return
+        }
+      })
+      const url = '/api/data_entry/api_cache/?query=sports/' + x + '/events/' + today
+      axios.get(url, {'headers': this.headers})
+        .then(res => {
+          console.log("res = ", res.data[0].data)
+          const resData = JSON.parse(res.data[0].data)
+          console.log("resData = ", resData)
+          resData.events.map(e => {
+            let eventDate = e.event_date.substr(11, 5)
+            if (this.state.range_start != "" && eventDate < this.state.range_start) return
+            if (this.state.range_end != "" && eventDate > this.state.range_end) return
+            let eventRow = {
+              eventId: e.event_id,
+              sportId: e.sport_id,
+              sportName: s_name,
+              home: e.teams_normalized[0].is_home == true? {
+                teamId: e.teams_normalized[0].team_id,
+                name: e.teams_normalized[0].name,
+                mascot: e.teams_normalized[0].mascot,
+                fullName: e.teams_normalized[0].name + " " + e.teams_normalized[0].mascot,
+              } : {
+                teamId: e.teams_normalized[1].team_id,
+                name: e.teams_normalized[1].name,
+                mascot: e.teams_normalized[1].mascot,
+                fullName: e.teams_normalized[1].name + " " + e.teams_normalized[1].mascot,
+              },
+              away: e.teams_normalized[0].is_away == true? {
+                teamId: e.teams_normalized[0].team_id,
+                name: e.teams_normalized[0].name,
+                mascot: e.teams_normalized[0].mascot,
+                fullName: e.teams_normalized[0].name + " " + e.teams_normalized[0].mascot,
+              } : {
+                teamId: e.teams_normalized[1].team_id,
+                name: e.teams_normalized[1].name,
+                mascot: e.teams_normalized[1].mascot,
+                fullName: e.teams_normalized[1].name + " " + e.teams_normalized[1].mascot,
+              },
+              gameTime: eventDate,
+            }
+            list.push(eventRow)
+          })
+          this.setState({events: list})
+          console.log("events = ", this.state.events)
+        });
+    })
   }
 
   
@@ -105,52 +175,32 @@ class CollectionPage extends Component {
                                         <th>Home</th>
                                         <th>Away</th>
                                         <th>sport</th>
-                                        <th>pick</th>
-                                        <th>grade</th>
-                                        <th>line</th>
-                                        <th>analyst</th>
+                                        {this.state.field_names.map((x) => {return (<th>{x}</th>)})}
                                         <th>Action</th>                        
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
+                                  { this.state.events.map((e) => {
+                                    return (
+                                      <tr>
                                         <td><FormCheck type="checkbox"/></td>
-                                        <td><FormText>13:10</FormText></td>
-                                        <td><FormText>Atlanta Hawks</FormText></td>
-                                        <td><FormText>Miami Heat</FormText></td>
-                                        <td><FormText>NBA</FormText></td>
-                                        <td><FormControl type="text" value="Atlanta Hawks" /></td>
-                                        <td><FormControl type="text" value="A" /></td>
-                                        <td><FormControl type="text" value="-7.5" /></td>
-                                        <td><FormControl type="text" value="Ralph Nugent" /></td>
+                                        <td><FormText>{e.gameTime}</FormText></td>
+                                        <td><FormText>{e.home.fullName}</FormText></td>
+                                        <td><FormText>{e.away.fullName}</FormText></td>
+                                        <td><FormText>{e.sportName}</FormText></td>
+                                        <td>
+                                          {this.state.field_types.map((x) => {
+                                            if (x == 'teamname') {
+                                              return <Select options={[{value: e.home.fullName, label: e.home.fullName}, {value: e.away.fullName, label: e.away.fullName}]} />
+                                            } else {
+                                              return <FormControl type="text" value={x} />
+                                            }
+                                          })}
+                                        </td>
                                         <td><Button variant="info" className="btn-fill">Duplicate</Button></td>
-                                    </tr>
-
-                                    <tr>
-                                        <td><FormCheck type="checkbox"/></td>
-                                        <td><FormText>13:10</FormText></td>
-                                        <td><FormText>Atlanta Hawks</FormText></td>
-                                        <td><FormText>Miami Heat</FormText></td>
-                                        <td><FormText>NBA</FormText></td>
-                                        <td><FormControl type="text" value="Atlanta Hawks" /></td>
-                                        <td><FormControl type="text" value="A" /></td>
-                                        <td><FormControl type="text" value="-7.5" /></td>
-                                        <td><FormControl type="text" value="Ralph Nugent" /></td>
-                                        <td><Button variant="info" className="btn-fill">Duplicate</Button></td>
-                                    </tr>
-
-                                    <tr>
-                                        <td><FormCheck type="checkbox"/></td>
-                                        <td><FormText>13:10</FormText></td>
-                                        <td><FormText>Atlanta Hawks</FormText></td> 
-                                        <td><FormText>Miami Heat</FormText></td>
-                                        <td><FormText>NBA</FormText></td>
-                                        <td><FormControl type="text" value="Atlanta Hawks" /></td>
-                                        <td><FormControl type="text" value="A" /></td>
-                                        <td><FormControl type="text" value="-7.5" /></td>
-                                        <td><FormControl type="text" value="Ralph Nugent" /></td>
-                                        <td><Button variant="info" className="btn-fill">Duplicate</Button></td>
-                                    </tr>
+                                      </tr>
+                                    )
+                                  })}
                                 </tbody>
                             </Table>
                         }

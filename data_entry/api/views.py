@@ -136,6 +136,7 @@ class ScheduleView(APIView):
         instance = get_object_or_404(Schedule.objects.all(), id=request.data["id"])
 
         serializer = ScheduleCollectionSerializer(instance, data=request.data)
+        print(request.data)
         print("$$$$$$$ 1")
         # validate and update
         if serializer.is_valid():
