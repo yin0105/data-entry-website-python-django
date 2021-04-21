@@ -75,12 +75,8 @@ class LoginPage extends Component {
 
           await axios.get('/api/data_entry/api_cache/?query=sports', {'headers': headers})
           .then(res => {
-            console.log("###########################")
-            console.log(res.data)
             const sports_ids = JSON.parse(res.data[0].data)
-            console.log(sports_ids)
-            console.log(sports_ids.sports)
-              saveToLocalStorage("sports_ids", sports_ids.sports)
+            saveToLocalStorage("sports_ids", sports_ids.sports)
           });
 
           await this.props.get_userinfo()
@@ -120,7 +116,7 @@ class LoginPage extends Component {
         );
       } else {
         return (
-          <Redirect to='/frontend/data_collector/dashboard'/>
+          <Redirect to='/frontend/user/dashboard'/>
         )
       }
     } else {

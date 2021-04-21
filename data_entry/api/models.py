@@ -44,6 +44,15 @@ class Schedule(models.Model):
     active = models.BooleanField(default=False)
     weekdays = models.CharField( max_length=30, verbose_name='weekdays')
     time_ranges = models.TextField(max_length=1000, blank=True)
+    status = models.CharField(
+        max_length=30,
+        default='available',
+        choices=(
+            ('avaiable', 'Available'),
+            ('in_progress', 'In Progress'),
+            ('completed', 'Completed')
+        )
+    )
 
     # Metadata
     class Meta:

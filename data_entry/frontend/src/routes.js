@@ -74,20 +74,20 @@ var routes = [
   },    
   {
     path: "/dashboard",
-    layout: "/frontend/data_collector",
+    layout: "/frontend/user",
     name: "Home",
     icon: "pe-7s-graph",
     redirect: true,
-    category: ["data_collector"],
+    category: [],
     component: ToDoList
   },
   {
     path: "/collection_page",
-    layout: "/frontend/data_collector",
-    name: "CollectionPage",
+    layout: "/frontend/user",
+    name: "Dynamic Collection",
     icon: "pe-7s-date",
     redirect: true,
-    category: ["data_collector",],
+    category: [],
     component: CollectionPage
   },
   {
@@ -103,7 +103,7 @@ var routes = [
     layout: "/frontend/auth",
     name: "Log out",
     icon: "pe-7s-next-2",
-    category: ["admin", "data_collector",],
+    category: ["admin",],
     component: LogoutPage
   },
   {

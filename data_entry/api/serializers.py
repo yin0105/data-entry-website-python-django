@@ -50,7 +50,7 @@ class ScheduleSerializer(serializers.ModelSerializer):
      
     class Meta:
         model = Schedule
-        fields = ['id', 'collection', 'active', 'weekdays', 'time_ranges']  
+        fields = '__all__'
 
 
 class ScheduleCollectionSerializer(serializers.ModelSerializer):

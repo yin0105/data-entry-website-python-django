@@ -30,65 +30,42 @@ import {
   FormCheck,
 } from "react-bootstrap";
 
-// react component that creates a switch button that changes from on to off mode
-import Switch from "react-bootstrap-switch";
-
 import Card from "components/Card/Card.jsx";
-
 import Button from "components/CustomButton/CustomButton.jsx";
-
-import img1 from "assets/img/blog-1.jpg";
-import img2 from "assets/img/blog-2.jpg";
-import img3 from "assets/img/blog-3.jpg";
-import img4 from "assets/img/blog-4.jpg";
-import img5 from "assets/img/blog-5.jpg";
+import axios from 'axios'
+import { loadFromLocalStorage, saveToLocalStorage } from "redux/reducers/auth";
+import { confirmAlert } from 'react-confirm-alert'; // Import
+import 'react-confirm-alert/src/react-confirm-alert.css'; // Import css
+import {NotificationContainer, NotificationManager} from 'react-notifications';
+import 'react-notifications/lib/notifications.css';
+import 'react-notifications/dist/react-notifications'
+import {Redirect} from 'react-router-dom';
 
 class CollectionPage extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      range_start: '',
+      range_end: '',
+      redirect: null,
+    }
+  };
+
+  token = loadFromLocalStorage("token");
+  collection = loadFromLocalStorage("collection")
+  
+  headers = { 
+    'Authorization': 'token ' + this.token,
+  };
+
+  componentDidMount() {    
+    const times = this.collection.time_ranges.split("/")
+    this.setState({range_start: times[2]})
+    this.setState({range_end: times[3]})
+  }
+
+  
   render() {
-    const view = <Tooltip id="view">View Profile</Tooltip>;
-    const edit = <Tooltip id="edit">Edit Profile</Tooltip>;
-    const remove = <Tooltip id="remove">Remove</Tooltip>;
-    const viewPost = <Tooltip id="view">View Post</Tooltip>;
-    const editPost = <Tooltip id="edit">Edit Post</Tooltip>;
-    const removePost = <Tooltip id="remove">Remove Post</Tooltip>;
-    const actions = (
-      <td className="td-actions text-center">
-        <OverlayTrigger placement="top" overlay={view}>
-          <Button simple bsStyle="info" bsSize="xs">
-            <i className="fa fa-user" />
-          </Button>
-        </OverlayTrigger>
-        <OverlayTrigger placement="top" overlay={edit}>
-          <Button simple bsStyle="success" bsSize="xs">
-            <i className="fa fa-edit" />
-          </Button>
-        </OverlayTrigger>
-        <OverlayTrigger placement="top" overlay={remove}>
-          <Button simple bsStyle="danger" bsSize="xs">
-            <i className="fa fa-times" />
-          </Button>
-        </OverlayTrigger>
-      </td>
-    );
-    const actionsPost = (
-      <td className="td-actions">
-        <OverlayTrigger placement="left" overlay={viewPost}>
-          <Button simple icon bsStyle="info">
-            <i className="fa fa-image" />
-          </Button>
-        </OverlayTrigger>
-        <OverlayTrigger placement="left" overlay={editPost}>
-          <Button simple icon bsStyle="success">
-            <i className="fa fa-edit" />
-          </Button>
-        </OverlayTrigger>
-        <OverlayTrigger placement="left" overlay={removePost}>
-          <Button simple icon bsStyle="danger">
-            <i className="fa fa-times" />
-          </Button>
-        </OverlayTrigger>
-      </td>
-    );
     return (
       <div className="main-content">
         <Container fluid>
@@ -97,10 +74,10 @@ class CollectionPage extends Component {
             </div>
             <Row className="align-items-baseline">
                 <Col md={{ span: 2, offset: 1 }}>
-                    <FormLabel>Collecting <b className="mx-4">test-espn.com</b></FormLabel>
+                    <FormLabel>Collecting <b className="mx-4">{this.collection.name}</b></FormLabel>
                 </Col>
                 <Col md={{ span: 1 }}>
-                    <FormLabel>12:45-13:15 </FormLabel>
+                    <FormLabel>{this.state.range_start} - {this.state.range_end}</FormLabel>
                 </Col>
                 <Col md={{ span: 3 }}>
                     <FormControl type="text"/>

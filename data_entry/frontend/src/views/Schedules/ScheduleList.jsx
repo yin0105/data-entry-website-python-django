@@ -48,7 +48,6 @@ class ScheduleList extends Component {
   }
 
   handleActiveChange = x => {
-    console.log("handleActiveChange", x)
     let form_data = new FormData();
     form_data.append('id', x.id);
     form_data.append('collection', x.collection);
@@ -70,7 +69,6 @@ class ScheduleList extends Component {
   handleEditSchedule = x => {
     this.setState({redirect: "/frontend/admin/edit_schedule"})
     saveToLocalStorage("collection", x)
-    console.log("x = ",x)
   }
 
   render() {

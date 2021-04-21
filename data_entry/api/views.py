@@ -136,9 +136,10 @@ class ScheduleView(APIView):
         instance = get_object_or_404(Schedule.objects.all(), id=request.data["id"])
 
         serializer = ScheduleCollectionSerializer(instance, data=request.data)
-
+        print("$$$$$$$ 1")
         # validate and update
         if serializer.is_valid():
+            print("$$$$$$$ 2")
             serializer.save()
             serializer_dict = serializer.data
             serializer_dict["message"] = "Schedule updated successfully."

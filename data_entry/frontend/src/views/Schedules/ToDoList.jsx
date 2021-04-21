@@ -9,7 +9,6 @@ import {
   Tooltip,
   FormLabel,
 } from "react-bootstrap";
-import { Link } from "react-router-dom"
 import Card from "components/Card/Card.jsx";
 import Button from "components/CustomButton/CustomButton.jsx";
 import axios from 'axios'
@@ -106,9 +105,38 @@ class ToDoList extends Component {
     }).catch(err => {console.log("Error"); console.log(err)})
   }
 
-  handleEditSchedule = x => {
-    this.setState({redirect: "/frontend/admin/edit_schedule"})
-    saveToLocalStorage("collection", x)
+  gotoCollect = xx => {
+    let ok = false
+    let form_data = new FormData();
+    let url = '/api/data_entry/schedule/';
+    this.state.schedules.map((x) => {
+      if (ok) return
+      if (x.id = xx.id) {
+        form_data.append('id', x.id);
+        form_data.append('collection', x.collection);
+        form_data.append('active', x.active);
+        form_data.append('weekdays', x.weekdays);
+        form_data.append('time_ranges', x.time_ranges);
+        form_data.append('status', 'in_progress');
+        ok = true
+        return
+      }
+    })
+    if (ok) {
+      axios.put(url, form_data, {
+        headers: {
+            'Authorization': 'token ' + this.token,
+        }
+      }).then(res => {
+        console.log("res = ", res)
+        axios.get('/api/data_entry/collection/?name=' + xx.collection_name, {'headers': this.headers})
+        .then(res => {
+          let collectionToRedirect = { ...res.data[0], time_ranges: xx.time_ranges }
+          this.setState({redirect: "/frontend/user/collection_page"})
+          saveToLocalStorage("collection", collectionToRedirect)
+        });
+      }).catch(err => {console.log("Error"); console.log(err)})
+    }
   }
 
   render() {
@@ -153,9 +181,11 @@ class ToDoList extends Component {
                             <td dangerouslySetInnerHTML={{__html: due}} />
                             <td dangerouslySetInnerHTML={{__html: collect}} />                            
                             <td>
-                            <Link to="/frontend/admin/add_schedule" className="mx-auto btn btn-success btn-fill">
+                            {/* <Link to="/frontend/user/colletion_page" className="mx-auto btn btn-success btn-fill"> */}
+                            <Button variant="success" fill wd mx_auto type="submit" onClick={() => this.gotoCollect(x)}>
                               Collect
-                            </Link>
+                            </Button>
+                            {/* </Link> */}
                             </td>
                           </tr>);
                         })}
