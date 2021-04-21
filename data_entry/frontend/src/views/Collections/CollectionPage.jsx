@@ -29,7 +29,7 @@ import {
   Radio,
   FormCheck,
 } from "react-bootstrap";
-
+import { Link } from "react-router-dom"
 import Card from "components/Card/Card.jsx";
 import Button from "components/CustomButton/CustomButton.jsx";
 import axios from 'axios'
@@ -69,10 +69,10 @@ class CollectionPage extends Component {
     this.setState({range_end: times[3]})
     this.setState({field_names: this.collection.field_names.split("::")})
     this.setState({field_types: this.collection.field_types.split("::")})
-    this.getEvents()
+    this.getEvents(false)
   }
 
-  getEvents = () => {
+  getEvents = force => {
     let list = []
     this.setState({events: list})
     const d = new Date();
@@ -88,7 +88,7 @@ class CollectionPage extends Component {
           return
         }
       })
-      const url = '/api/data_entry/api_cache/?query=sports/' + x + '/events/' + today
+      const url = '/api/data_entry/api_cache/?query=sports/' + x + '/events/' + today + (force? '&force=1':'')
       axios.get(url, {'headers': this.headers})
         .then(res => {
           console.log("res = ", res.data[0].data)
@@ -96,8 +96,12 @@ class CollectionPage extends Component {
           console.log("resData = ", resData)
           resData.events.map(e => {
             let eventDate = e.event_date.substr(11, 5)
+            console.log("eventDate = ", eventDate)
+            console.log("this.state.range_start = ", this.state.range_start)
+            console.log("this.state.range_end = ", this.state.range_end)
             if (this.state.range_start != "" && eventDate < this.state.range_start) return
             if (this.state.range_end != "" && eventDate > this.state.range_end) return
+            console.log("ok")
             let eventRow = {
               eventId: e.event_id,
               sportId: e.sport_id,
@@ -143,23 +147,17 @@ class CollectionPage extends Component {
                 <FormLabel className="mx-auto h1 "><b>Collection Page</b></FormLabel>
             </div>
             <Row className="align-items-baseline">
-                <Col md={{ span: 2, offset: 1 }}>
+                <Col md={{ span: 4, offset: 1 }}>
                     <FormLabel>Collecting <b className="mx-4">{this.collection.name}</b></FormLabel>
-                </Col>
-                <Col md={{ span: 1 }}>
                     <FormLabel>{this.state.range_start} - {this.state.range_end}</FormLabel>
                 </Col>
-                <Col md={{ span: 3 }}>
+                <Col md={{ span: 2 }}>
                     <FormControl type="text"/>
                 </Col>
-                <Col md={{ span: 1 }}>
+                <Col md={{ span: 4 }} style={{ display: 'flex', justifyContent: 'space-around'}}>
                     <Button variant="info" className="btn-fill">Search</Button>
-                </Col>
-                <Col md={{ span: 1 }}>
                     <Button variant="info" className="btn-fill">Show All</Button>
-                </Col>
-                <Col md={{ span: 2 }}>
-                    <Button variant="info" className="btn-fill">Refresh API Data</Button>
+                    <Button variant="info" className="btn-fill" onClick={() => this.getEvents(true)}>Refresh API Data</Button>
                 </Col>
             </Row>
 
@@ -188,15 +186,13 @@ class CollectionPage extends Component {
                                         <td><FormText>{e.home.fullName}</FormText></td>
                                         <td><FormText>{e.away.fullName}</FormText></td>
                                         <td><FormText>{e.sportName}</FormText></td>
-                                        <td>
-                                          {this.state.field_types.map((x) => {
-                                            if (x == 'teamname') {
-                                              return <Select options={[{value: e.home.fullName, label: e.home.fullName}, {value: e.away.fullName, label: e.away.fullName}]} />
-                                            } else {
-                                              return <FormControl type="text" value={x} />
-                                            }
-                                          })}
-                                        </td>
+                                        {this.state.field_types.map((x) => {
+                                          if (x == 'teamname') {
+                                            return <td style={{ minWidth: 150 }}><Select options={[{value: e.home.fullName, label: e.home.fullName}, {value: e.away.fullName, label: e.away.fullName}]} /></td>
+                                          } else {
+                                            return <td><FormControl type="text" placeholder={x} /></td>
+                                          }
+                                        })}
                                         <td><Button variant="info" className="btn-fill">Duplicate</Button></td>
                                       </tr>
                                     )
@@ -207,7 +203,9 @@ class CollectionPage extends Component {
                         legend={
                             <Row>
                                 <Col md={{ span: 2, offset: 4 }} className="d-flex justify-content-center">
-                                    <Button variant="warning" className="btn-fill">Cancel</Button>
+                                  <Link to="/frontend/user/dashboard" className="mx-auto btn btn-primary btn-fill">
+                                    Cancel
+                                  </Link>
                                 </Col>
                                 <Col md={{ span: 2}} className="d-flex justify-content-center">
                                     <Button variant="primary" className="btn-fill">Submit</Button>

@@ -56,7 +56,7 @@ class APICacheView(APIView):
         query = request.GET["query"]
         now = timezone.now()
         data = APICache.objects.filter(query = query)
-        if len(data) > 0 and now - data[0].last_updated <= timedelta(minutes=cache_time):
+        if not "force" in request.GET and len(data) > 0 and now - data[0].last_updated <= timedelta(minutes=cache_time):
             serializer = APICacheSerializer(data, many=True)
             return Response(serializer.data)
         
@@ -134,13 +134,10 @@ class CollectionView(APIView):
 class ScheduleView(APIView):
     def put(self, request, format=None):  
         instance = get_object_or_404(Schedule.objects.all(), id=request.data["id"])
-
         serializer = ScheduleCollectionSerializer(instance, data=request.data)
-        print(request.data)
-        print("$$$$$$$ 1")
+
         # validate and update
         if serializer.is_valid():
-            print("$$$$$$$ 2")
             serializer.save()
             serializer_dict = serializer.data
             serializer_dict["message"] = "Schedule updated successfully."
