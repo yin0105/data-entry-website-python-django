@@ -138,6 +138,12 @@ class CollectionPage extends Component {
     })
   }
 
+  handleDupliacte = index => {
+    let list = [...this.state.events]
+    list = list.slice(0, index + 1).concat(list.slice(index, index + 1)).concat(list.slice(index + 1))
+    this.setState({events: list})
+  }
+
   
   render() {
     return (
@@ -178,7 +184,7 @@ class CollectionPage extends Component {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                  { this.state.events.map((e) => {
+                                  { this.state.events.map((e, i) => {
                                     return (
                                       <tr>
                                         <td><FormCheck type="checkbox"/></td>
@@ -193,7 +199,7 @@ class CollectionPage extends Component {
                                             return <td><FormControl type="text" placeholder={x} /></td>
                                           }
                                         })}
-                                        <td><Button variant="info" className="btn-fill">Duplicate</Button></td>
+                                        <td><Button variant="info" className="btn-fill" onClick={() => this.handleDupliacte(i)}>Duplicate</Button></td>
                                       </tr>
                                     )
                                   })}
