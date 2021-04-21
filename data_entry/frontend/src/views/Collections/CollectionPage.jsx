@@ -52,6 +52,9 @@ class CollectionPage extends Component {
       field_types: [],
       events: [],
       redirect: null,
+      isSearch: false,
+      searchString: '',
+      tmpSearchString: '',
     }
   };
 
@@ -77,7 +80,6 @@ class CollectionPage extends Component {
     this.setState({events: list})
     const d = new Date();
     let today = String(d.getUTCFullYear()) + "-" + String(d.getUTCMonth() + 1) + "-" + String(d.getUTCDate())
-    console.log("today = ", today)
     this.collection.sports.split("::").map((x) => {
       let s_name = null
       this.sports_ids.map((s) => {
@@ -89,19 +91,18 @@ class CollectionPage extends Component {
         }
       })
       const url = '/api/data_entry/api_cache/?query=sports/' + x + '/events/' + today + (force? '&force=1':'')
+      let fields = []
+      this.collection.field_types.split("::").map((x, i) => {
+        fields.push({type: x, value: ''})
+      })
+      console.log("fields = ", fields)
       axios.get(url, {'headers': this.headers})
         .then(res => {
-          console.log("res = ", res.data[0].data)
           const resData = JSON.parse(res.data[0].data)
-          console.log("resData = ", resData)
           resData.events.map(e => {
             let eventDate = e.event_date.substr(11, 5)
-            console.log("eventDate = ", eventDate)
-            console.log("this.state.range_start = ", this.state.range_start)
-            console.log("this.state.range_end = ", this.state.range_end)
             if (this.state.range_start != "" && eventDate < this.state.range_start) return
             if (this.state.range_end != "" && eventDate > this.state.range_end) return
-            console.log("ok")
             let eventRow = {
               eventId: e.event_id,
               sportId: e.sport_id,
@@ -129,11 +130,12 @@ class CollectionPage extends Component {
                 fullName: e.teams_normalized[1].name + " " + e.teams_normalized[1].mascot,
               },
               gameTime: eventDate,
+              fields: fields,
             }
             list.push(eventRow)
           })
           this.setState({events: list})
-          console.log("events = ", this.state.events)
+          // console.log("events = ", this.state.events)
         });
     })
   }
@@ -142,6 +144,19 @@ class CollectionPage extends Component {
     let list = [...this.state.events]
     list = list.slice(0, index + 1).concat(list.slice(index, index + 1)).concat(list.slice(index + 1))
     this.setState({events: list})
+  }
+
+  handleSearchStringChange = e => {
+    this.setState({tmpSearchString: e.target.value})
+  }
+
+  handleSearchClick = () => {
+    this.setState({searchString: this.state.tmpSearchString})
+    this.setState({isSearch: true})
+  }
+
+  handleShowAll = () => {
+    this.setState({isSearch: false})
   }
 
   
@@ -158,11 +173,11 @@ class CollectionPage extends Component {
                     <FormLabel>{this.state.range_start} - {this.state.range_end}</FormLabel>
                 </Col>
                 <Col md={{ span: 2 }}>
-                    <FormControl type="text"/>
+                    <FormControl type="text" onChange={e => this.handleSearchStringChange(e)}/>
                 </Col>
                 <Col md={{ span: 4 }} style={{ display: 'flex', justifyContent: 'space-around'}}>
-                    <Button variant="info" className="btn-fill">Search</Button>
-                    <Button variant="info" className="btn-fill">Show All</Button>
+                    <Button variant="info" className="btn-fill" onClick={() => this.handleSearchClick()}>Search</Button>
+                    <Button variant="info" className="btn-fill" onClick={() => this.handleShowAll()}>Show All</Button>
                     <Button variant="info" className="btn-fill" onClick={() => this.getEvents(true)}>Refresh API Data</Button>
                 </Col>
             </Row>
@@ -185,6 +200,26 @@ class CollectionPage extends Component {
                                 </thead>
                                 <tbody>
                                   { this.state.events.map((e, i) => {
+                                    let found = false
+                                    const searchString = this.state.searchString.toLowerCase()
+                                    if (this.state.isSearch && searchString != '') {
+                                      if (e.gameTime.toLowerCase().includes(searchString)) {
+                                        found = true
+                                      } else if (e.home.fullName.toLowerCase().includes(searchString)) {
+                                        found = true
+                                      } else if (e.away.fullName.toLowerCase().includes(searchString)) {
+                                        found = true
+                                      } else if (e.sportName.toLowerCase().includes(searchString)) {
+                                        found = true
+                                      } else {
+                                        e.fields.map((x) => {
+                                          if (x.value.toLowerCase().includes(searchString)) {
+                                            found = true
+                                          }
+                                        })
+                                      }
+                                      if (!found) return
+                                    }
                                     return (
                                       <tr>
                                         <td><FormCheck type="checkbox"/></td>
@@ -192,11 +227,11 @@ class CollectionPage extends Component {
                                         <td><FormText>{e.home.fullName}</FormText></td>
                                         <td><FormText>{e.away.fullName}</FormText></td>
                                         <td><FormText>{e.sportName}</FormText></td>
-                                        {this.state.field_types.map((x) => {
-                                          if (x == 'teamname') {
+                                        {e.fields.map((x) => {
+                                          if (x.type == 'teamname') {
                                             return <td style={{ minWidth: 150 }}><Select options={[{value: e.home.fullName, label: e.home.fullName}, {value: e.away.fullName, label: e.away.fullName}]} /></td>
                                           } else {
-                                            return <td><FormControl type="text" placeholder={x} /></td>
+                                            return <td><FormControl type="text" placeholder={x.type} /></td>
                                           }
                                         })}
                                         <td><Button variant="info" className="btn-fill" onClick={() => this.handleDupliacte(i)}>Duplicate</Button></td>
