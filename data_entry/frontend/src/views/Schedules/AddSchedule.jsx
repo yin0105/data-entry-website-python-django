@@ -247,33 +247,14 @@ class AddCollection extends Component {
                           <Row className="align-items-center">
                             <Col md={{ span: 11}}>
                               <Row>
-                                <Col md={{ span: 3 }} className="text-right">
-                                  <Row className="align-items-baseline my-0">
                                     <FormLabel>Start Time : </FormLabel>
                                     <this.TimeSelector row_index={i} col_name="start_time"/>
-                                  </Row>
-                                </Col>
-
-                                <Col md={{ span: 3 }} className="text-right">
-                                  <Row className="align-items-baseline my-0">
                                     <FormLabel>Due : </FormLabel>
                                     <this.TimeSelector row_index={i} col_name="due"/>
-                                  </Row>
-                                </Col>
-
-                                <Col md={{ span: 3 }} className="text-right">
-                                  <Row className="align-items-baseline my-0">
                                     <FormLabel>Range Start : </FormLabel>
                                     <this.TimeSelector row_index={i} col_name="range_start"/>
-                                  </Row>
-                                </Col>
-
-                                <Col md={{ span: 3 }} className="text-right">
-                                  <Row className="align-items-baseline">
                                     <FormLabel>Range End : </FormLabel>
                                     <this.TimeSelector row_index={i} col_name="range_end"/>
-                                  </Row>
-                                </Col>
                               </Row>
                             </Col>
                               

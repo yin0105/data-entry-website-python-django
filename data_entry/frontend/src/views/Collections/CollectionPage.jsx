@@ -150,7 +150,15 @@ class CollectionPage extends Component {
     this.setState({tmpSearchString: e.target.value})
   }
 
+  handleSearchStringKeyPress = e => {
+    console.log("e = ", e)
+    console.log("e.target = ", e.target)
+    console.log("handleSearchStringKeyPress :: ", e.keyCode)
+    if(e.keyCode == 13) this.handleSearchClick()
+  }
+
   handleSearchClick = () => {
+    console.log("handleSearchClick")
     this.setState({searchString: this.state.tmpSearchString})
     this.setState({isSearch: true})
   }
@@ -173,7 +181,7 @@ class CollectionPage extends Component {
                     <FormLabel>{this.state.range_start} - {this.state.range_end}</FormLabel>
                 </Col>
                 <Col md={{ span: 2 }}>
-                    <FormControl type="text" onChange={e => this.handleSearchStringChange(e)}/>
+                    <FormControl type="text" onChange={e => this.handleSearchStringChange(e)} onKeyPress={this.handleSearchStringKeyPress}/>
                 </Col>
                 <Col md={{ span: 4 }} style={{ display: 'flex', justifyContent: 'space-around'}}>
                     <Button variant="info" className="btn-fill" onClick={() => this.handleSearchClick()}>Search</Button>
