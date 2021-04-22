@@ -102,29 +102,58 @@ class CollectionView(APIView):
 
     def post(self, request, *args, **kwargs):
         req = request.data
-        posts_serializer = CollectionSerializer(data=request.data)
-        if posts_serializer.is_valid():
-            posts_serializer.save()            
-            collection_name = req["name"]
-            field_names = str(req["field_names"]).split("::")
-            field_types = str(req["field_types"]).split("::")
-            sql = "CREATE TABLE `" + "col_" + collection_name + "` (`event_id` VARCHAR(255) NOT NULL, "
-            for (name, type) in zip(field_names, field_types):
-                sql += "`" + name + "` "
-                if type == "numeric":
-                    sql += "FLOAT(11) NOT NULL, "
-                else:
-                    sql += "VARCHAR(255) NOT NULL, "
-            sql += "`col_dt` DATETIME NOT NULL, PRIMARY KEY (`event_id`) ); "
+        table_name = "col_" + req["name"]
+        if "save_collected_data" in req:
+            event_id = req["event_id"]            
+            sql = "SELECT COUNT(*) FROM `" + table_name + "` WHERE event_id='" + event_id + "'"
             with connection.cursor() as cursor:
-                try:
-                    cursor.execute(sql)
-                    return Response({"res": "success"})
-                except:
-                    return Response({"res": "fail"})
+                cursor.execute(sql)
+                row = cursor.fetchone()
+                now = timezone.now().strftime("%Y-%m-%d %H:%M:%S")
+                if (row[0] > 0):
+                    sql = "UPDATE `" + table_name + "` SET "
+                    for field in req:
+                        if field != "name" and field != "event_id" and field != "save_collected_data":
+                            sql += field + "=" + req[field] + ", "
+                    sql += "col_dt='" + now + "' WHERE event_id='" + event_id + "'"
+                else:
+                    sql = "INSERT INTO `" + table_name + "` "
+                    field_names = ""
+                    field_values = ""
+                    for field in req:
+                        if field != "name" and field != "save_collected_data":
+                            field_names += field + ", "
+                            if field == "event_id":
+                                field_values += "'" + req[field] + "', "
+                            else:
+                                field_values += req[field] + ", "
+                    sql += "(" + field_names + "col_dt) VALUES (" + field_values + "'" + now + "')"
+                print("sql = ", sql)
+                with connection.cursor() as cursor_2:
+                    return Response({"res": cursor_2.execute(sql)})
         else:
-            print('error', posts_serializer.errors)
-            return Response(posts_serializer.errors, status=status.HTTP_400_BAD_REQUEST)  
+            posts_serializer = CollectionSerializer(data=request.data)
+            if posts_serializer.is_valid():
+                posts_serializer.save()        
+                field_names = str(req["field_names"]).split("::")
+                field_types = str(req["field_types"]).split("::")
+                sql = "CREATE TABLE `" + table_name + "` (`event_id` VARCHAR(255) NOT NULL, "
+                for (name, type) in zip(field_names, field_types):
+                    sql += "`" + name + "` "
+                    if type == "numeric":
+                        sql += "FLOAT(11) NOT NULL, "
+                    else:
+                        sql += "VARCHAR(255) NOT NULL, "
+                sql += "`col_dt` DATETIME NOT NULL, PRIMARY KEY (`event_id`) ); "
+                with connection.cursor() as cursor:
+                    try:
+                        cursor.execute(sql)
+                        return Response({"res": "success"})
+                    except:
+                        return Response({"res": "fail"})
+            else:
+                print('error', posts_serializer.errors)
+                return Response(posts_serializer.errors, status=status.HTTP_400_BAD_REQUEST)  
 
 
 class ScheduleView(APIView):

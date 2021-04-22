@@ -91,15 +91,15 @@ class CollectionPage extends Component {
         }
       })
       const url = '/api/data_entry/api_cache/?query=sports/' + x + '/events/' + today + (force? '&force=1':'')
-      let fields = []
-      this.collection.field_types.split("::").map((x, i) => {
-        fields.push({name: this.collection.field_names.split("::")[i], type: x, value: ''})
-      })
-      console.log("fields = ", fields)
+      
       axios.get(url, {'headers': this.headers})
         .then(res => {
           const resData = JSON.parse(res.data[0].data)
           resData.events.map(e => {
+            let fields = []
+            this.collection.field_types.split("::").map((x, i) => {
+              fields.push({name: this.collection.field_names.split("::")[i], type: x, value: ''})
+            })
             let eventDate = e.event_date.substr(11, 5)
             if (this.state.range_start != "" && eventDate < this.state.range_start) return
             if (this.state.range_end != "" && eventDate > this.state.range_end) return
@@ -170,24 +170,19 @@ class CollectionPage extends Component {
   handleFieldValueChange = (e, rowIndex, colIndex) => {
     let list = [...this.state.events]
     list[rowIndex].fields[colIndex].value = e.target.value
-    console.log("list[", rowIndex, "].fields[", colIndex, "] = ", list[rowIndex].fields[colIndex])
     this.setState({events: list})
-    console.log("events = ", this.state.events)
   }
 
   handleSelectorValueChange = (e, rowIndex, colIndex) => {
     let list = [...this.state.events]
     list[rowIndex].fields[colIndex].value = e.value
-    console.log("list[", rowIndex, "].fields[", colIndex, "] = ", list[rowIndex].fields[colIndex])
     this.setState({events: list})
-    console.log("events = ", this.state.events)
   }
 
   handleNoPickClick = (e, rowIndex) => {
     let list = [...this.state.events]
     list[rowIndex].noPick = e.target.checked
     this.setState({events: list})
-    console.log("events = ", this.state.events)
   }
 
   handleSubmit = () => {
@@ -199,7 +194,6 @@ class CollectionPage extends Component {
       if (e.noPick) return
       e.fields.map( field => {
         if (errMsg != '') return
-        console.log("field.value = #", field.value, "#")
         if (field.value == '') {
           errHeader = 'No Value'
           if (field.type == 'teamname') {
@@ -228,21 +222,26 @@ class CollectionPage extends Component {
     }
     console.log("Ok")
 
-    let form_data = new FormData();
-    let url = '/api/data_entry/schedule/';    
+    
+    let url = '/api/data_entry/collection/';    
 
-    this.state.events.map( async(e) => {
+    this.state.events.map( (e) => {
+      let form_data = new FormData();
+      console.log("event = ", e)
+      form_data.append('name', this.collection.name);
       form_data.append('event_id', e.eventId);
+      form_data.append('save_collected_data', 1);
       e.fields.map( field => {
-        form_data.append(field.name, field.value)
+        let v = field.type == "numeric" ? field.value: "'" + field.value + "'"
+        form_data.append(field.name, v)
       })
-      await axios.post(url, form_data, {
+      axios.post(url, form_data, {
         headers: {
             'Authorization': 'token ' + this.token,
         }
       }).then(res => {
-        console.log("res = ", res[0])
-          this.createNotification('success', 'New schedule has been added successfully!', '')
+        console.log("res = ", res)
+          this.createNotification('success', 'The collected data has been saved successfully!', '')
           return
       }).catch(err => {console.log("Error"); console.log(err)})
     })
