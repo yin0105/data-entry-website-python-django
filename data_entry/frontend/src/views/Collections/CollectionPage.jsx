@@ -93,7 +93,7 @@ class CollectionPage extends Component {
       const url = '/api/data_entry/api_cache/?query=sports/' + x + '/events/' + today + (force? '&force=1':'')
       let fields = []
       this.collection.field_types.split("::").map((x, i) => {
-        fields.push({type: x, value: ''})
+        fields.push({name: this.collection.field_names.split("::")[i], type: x, value: ''})
       })
       console.log("fields = ", fields)
       axios.get(url, {'headers': this.headers})
@@ -104,6 +104,7 @@ class CollectionPage extends Component {
             if (this.state.range_start != "" && eventDate < this.state.range_start) return
             if (this.state.range_end != "" && eventDate > this.state.range_end) return
             let eventRow = {
+              noPick: false,
               eventId: e.event_id,
               sportId: e.sport_id,
               sportName: s_name,
@@ -135,12 +136,11 @@ class CollectionPage extends Component {
             list.push(eventRow)
           })
           this.setState({events: list})
-          // console.log("events = ", this.state.events)
         });
     })
   }
 
-  handleDupliacte = index => {
+  handleDuplicate = index => {
     let list = [...this.state.events]
     list = list.slice(0, index + 1).concat(list.slice(index, index + 1)).concat(list.slice(index + 1))
     this.setState({events: list})
@@ -166,6 +166,102 @@ class CollectionPage extends Component {
   handleShowAll = () => {
     this.setState({isSearch: false})
   }
+
+  handleFieldValueChange = (e, rowIndex, colIndex) => {
+    let list = [...this.state.events]
+    list[rowIndex].fields[colIndex].value = e.target.value
+    console.log("list[", rowIndex, "].fields[", colIndex, "] = ", list[rowIndex].fields[colIndex])
+    this.setState({events: list})
+    console.log("events = ", this.state.events)
+  }
+
+  handleSelectorValueChange = (e, rowIndex, colIndex) => {
+    let list = [...this.state.events]
+    list[rowIndex].fields[colIndex].value = e.value
+    console.log("list[", rowIndex, "].fields[", colIndex, "] = ", list[rowIndex].fields[colIndex])
+    this.setState({events: list})
+    console.log("events = ", this.state.events)
+  }
+
+  handleNoPickClick = (e, rowIndex) => {
+    let list = [...this.state.events]
+    list[rowIndex].noPick = e.target.checked
+    this.setState({events: list})
+    console.log("events = ", this.state.events)
+  }
+
+  handleSubmit = () => {
+    console.log("handleSubmit()")
+    let errMsg = ''
+    let errHeader = ''
+    this.state.events.map( e => {
+      if (errMsg != '') return
+      if (e.noPick) return
+      e.fields.map( field => {
+        if (errMsg != '') return
+        console.log("field.value = #", field.value, "#")
+        if (field.value == '') {
+          errHeader = 'No Value'
+          if (field.type == 'teamname') {
+            errMsg = "Please select '" + field.name + "' value."
+          } else {
+            errMsg = "Please enter '" + field.name + "' value."
+          }
+          return
+        }
+        errHeader = 'Invalid Entry'
+        if (field.type == "numeric") {
+          if (isNaN(field.value)) {
+            errMsg = "Please enter a numeric value in '" + field.name + "'."
+            return
+          }
+          if (parseFloat(field.value, 10) < -9999.9 || (parseFloat(field.value, 10) > 9999.9)) {
+            errMsg = "Please enter a numeric value between -9999.9 and 9999.9 in '" + field.name + "'."
+            return
+          }
+        }
+      })
+    })
+    if (errMsg != '') {
+      this.createNotification('error', errHeader, errMsg)
+      return
+    }
+    console.log("Ok")
+
+    let form_data = new FormData();
+    let url = '/api/data_entry/schedule/';    
+
+    this.state.events.map( async(e) => {
+      form_data.append('event_id', e.eventId);
+      e.fields.map( field => {
+        form_data.append(field.name, field.value)
+      })
+      await axios.post(url, form_data, {
+        headers: {
+            'Authorization': 'token ' + this.token,
+        }
+      }).then(res => {
+        console.log("res = ", res[0])
+          this.createNotification('success', 'New schedule has been added successfully!', '')
+          return
+      }).catch(err => {console.log("Error"); console.log(err)})
+    })
+
+
+  }
+
+  createNotification = (type, title, content) => {
+    switch (type) {
+        case 'info':
+        return NotificationManager.info(content);
+        case 'success':
+        return NotificationManager.success(content, title);
+        case 'warning':
+        return NotificationManager.warning(content, title, 3000);
+        case 'error':
+        return NotificationManager.error(content, title, 5000);
+    }
+  };
 
   
   render() {
@@ -230,19 +326,19 @@ class CollectionPage extends Component {
                                     }
                                     return (
                                       <tr>
-                                        <td><FormCheck type="checkbox"/></td>
+                                        <td><FormCheck type="checkbox" onClick={e => this.handleNoPickClick(e, i)}/></td>
                                         <td><FormText>{e.gameTime}</FormText></td>
                                         <td><FormText>{e.home.fullName}</FormText></td>
                                         <td><FormText>{e.away.fullName}</FormText></td>
                                         <td><FormText>{e.sportName}</FormText></td>
-                                        {e.fields.map((x) => {
+                                        {e.fields.map((x, j) => {
                                           if (x.type == 'teamname') {
-                                            return <td style={{ minWidth: 150 }}><Select options={[{value: e.home.fullName, label: e.home.fullName}, {value: e.away.fullName, label: e.away.fullName}]} /></td>
+                                            return <td style={{ minWidth: 150 }}><Select options={[{value: e.home.fullName, label: e.home.fullName}, {value: e.away.fullName, label: e.away.fullName}]} onChange={e => this.handleSelectorValueChange(e, i, j)}/></td>
                                           } else {
-                                            return <td><FormControl type="text" placeholder={x.type} /></td>
+                                            return <td><FormControl type="text" placeholder={x.type} onChange={e => this.handleFieldValueChange(e, i, j)}/></td>
                                           }
                                         })}
-                                        <td><Button variant="info" className="btn-fill" onClick={() => this.handleDupliacte(i)}>Duplicate</Button></td>
+                                        <td><Button variant="info" className="btn-fill" onClick={() => this.handleDuplicate(i)}>Duplicate</Button></td>
                                       </tr>
                                     )
                                   })}
@@ -252,18 +348,19 @@ class CollectionPage extends Component {
                         legend={
                             <Row>
                                 <Col md={{ span: 2, offset: 4 }} className="d-flex justify-content-center">
-                                  <Link to="/frontend/user/dashboard" className="mx-auto btn btn-primary btn-fill">
+                                  <Link to="/frontend/user/dashboard" className="mx-auto btn btn-warning btn-fill">
                                     Cancel
                                   </Link>
                                 </Col>
                                 <Col md={{ span: 2}} className="d-flex justify-content-center">
-                                    <Button variant="primary" className="btn-fill">Submit</Button>
+                                    <Button variant="primary" className="btn-fill" onClick={() => this.handleSubmit()}>Submit</Button>
                                 </Col>
                             </Row>
                         }
                     />
                 </Col>
             </Row>
+            <NotificationContainer/>
         </Container>
       </div>
     );

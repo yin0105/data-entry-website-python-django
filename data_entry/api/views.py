@@ -101,16 +101,13 @@ class CollectionView(APIView):
         return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
+        req = request.data
         posts_serializer = CollectionSerializer(data=request.data)
         if posts_serializer.is_valid():
-            posts_serializer.save()
-            print("&"*50)
-            req = request.data
-            print(req["field_names"])
+            posts_serializer.save()            
             collection_name = req["name"]
             field_names = str(req["field_names"]).split("::")
             field_types = str(req["field_types"]).split("::")
-            print(field_names[0])
             sql = "CREATE TABLE `" + "col_" + collection_name + "` (`event_id` VARCHAR(255) NOT NULL, "
             for (name, type) in zip(field_names, field_types):
                 sql += "`" + name + "` "
@@ -119,7 +116,6 @@ class CollectionView(APIView):
                 else:
                     sql += "VARCHAR(255) NOT NULL, "
             sql += "`col_dt` DATETIME NOT NULL, PRIMARY KEY (`event_id`) ); "
-            print(sql)
             with connection.cursor() as cursor:
                 try:
                     cursor.execute(sql)
