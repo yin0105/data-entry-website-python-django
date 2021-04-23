@@ -21,7 +21,7 @@ import 'react-notifications/dist/react-notifications'
 import {Redirect} from 'react-router-dom';
 
 
-class ToDoList extends Component {
+class CollectionStatus extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -116,7 +116,9 @@ class ToDoList extends Component {
     let ok = false
     let form_data = new FormData();
     let url = '/api/data_entry/schedule/';
+    let status = ''
     this.state.schedules.map((x) => {
+      console.log("x = ", x)
       if (ok) return
       if (x.id == xx.id) {
         form_data.append('id', x.id);
@@ -126,9 +128,12 @@ class ToDoList extends Component {
         // form_data.append('time_ranges', x.time_ranges);
         if (x.status == "available") {
           form_data.append('status', 'in_progress');
+          status = 'in_progress'
         } else {
           form_data.append('status', x.status)
+          status = x.status
         }
+        console.log("form.status = ", status)
         ok = true
         return
       }
@@ -142,7 +147,7 @@ class ToDoList extends Component {
         console.log("res = ", res)
         await axios.get('/api/data_entry/collection/?name=' + xx.collection_name, {headers: this.headers})
         .then(res => {
-          let collectionToRedirect = { ...res.data[0], time_ranges: xx.time_ranges, status: form_data['status'] }
+          let collectionToRedirect = { ...res.data[0], time_ranges: xx.time_ranges, status: status }
           saveToLocalStorage("collection", collectionToRedirect)
           this.setState({redirect: "/frontend/user/collection_page"})
         });
@@ -221,4 +226,4 @@ class ToDoList extends Component {
   }
 }
 
-export default ToDoList;
+export default CollectionStatus;

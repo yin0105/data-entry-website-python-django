@@ -8,6 +8,7 @@ import AddSchedule from "views/Schedules/AddSchedule";
 import UpdateSchedule from "views/Schedules/UpdateSchedule";
 import CollectionList from "views/Collections/CollectionList";
 import CollectionPage from "views/Collections/CollectionPage";
+import CollectionStatus from "views/Collections/CollectionStatus";
 import AddCollection from "views/Collections/AddCollection";
 
 var routes = [
@@ -17,12 +18,12 @@ var routes = [
     name: "Dashboard",
     icon: "pe-7s-graph",
     category: ["admin",],
-    component: ScheduleStatus
+    component: CollectionStatus
   },
   {
     path: "/collection_list",
     layout: "/frontend/admin",
-    name: "Collection",
+    name: "Collection List",
     icon: "pe-7s-plugin",
     category: ["admin",],
     component: CollectionList
@@ -30,7 +31,7 @@ var routes = [
   {
     path: "/schedule_list",
     layout: "/frontend/admin",
-    name: "Schedule",
+    name: "Schedule List",
     icon: "pe-7s-note2",
     category: ["admin",],
     component: ScheduleList

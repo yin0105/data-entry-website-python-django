@@ -259,7 +259,7 @@ class CollectionPage extends Component {
             let form_data = new FormData();
             let url = '/api/data_entry/schedule/';
             const d = new Date()
-            const now = d.getUTCFullYear() + "-" + "0".concat((d.getUTCMonth() + 1)).substr(-2) + "-" + "0".concat(d.getDate()).substr(-2) + " " + "0".concat(d.getHours()).substr(-2) + ":" + "0".concat(d.getMinutes()).substr(-2) + ":" + "0".concat(d.getSeconds()).substr(-2)
+            const now = d.getUTCFullYear() + "-" + "0".concat((d.getUTCMonth() + 1)).substr(-2) + "-" + "0".concat(d.getUTCDate()).substr(-2) + " " + "0".concat(d.getUTCHours()).substr(-2) + ":" + "0".concat(d.getUTCMinutes()).substr(-2) + ":" + "0".concat(d.getUTCSeconds()).substr(-2)
             form_data.append('id', this.collection.id);
             form_data.append('status', this.user.id + "::" + now);
             axios.put(url, form_data, {
@@ -276,6 +276,7 @@ class CollectionPage extends Component {
   }
 
   handleCancel = () => {
+    console.log("status = ", this.collection.status)
     if (this.collection.status == "in_progress"){
       let form_data = new FormData();
       let url = '/api/data_entry/schedule/';
