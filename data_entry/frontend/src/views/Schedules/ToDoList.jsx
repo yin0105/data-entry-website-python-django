@@ -32,6 +32,7 @@ class ToDoList extends Component {
   };
 
   token = loadFromLocalStorage("token");
+  user = loadFromLocalStorage("user");
   headers = { 
     'Authorization': 'token ' + this.token,
   };
@@ -59,27 +60,30 @@ class ToDoList extends Component {
     this.state.schedules.map((schedule) => {
       let isDisplay = false
       let selectedTimeRange = ""
-      schedule.status == 'available' && schedule.active && schedule.weekdays[weekday - 1] == "1" && schedule.time_ranges.split("::").map((time_range) => {
-        if (isDisplay) return
-        const start_time = time_range.split("/")[0]
-        let start_timer = 0
-        if (start_time != "") {
-          const hour_min = start_time.split(":")
-          start_timer = parseInt(hour_min[0], 10) * 3600 + (parseInt(hour_min[1], 10) - 2) * 60
-        }
+      if (schedule.status == 'available' || schedule.status.indexOf(this.user.id + "::") == 0) {
+        schedule.active && schedule.weekdays[weekday - 1] == "1" && schedule.time_ranges.split("::").map((time_range) => {
+          if (isDisplay) return
+          const start_time = time_range.split("/")[0]
+          let start_timer = 0
+          if (start_time != "") {
+            const hour_min = start_time.split(":")
+            start_timer = parseInt(hour_min[0], 10) * 3600 + (parseInt(hour_min[1], 10) - 2) * 60
+          }
 
-        const due = time_range.split("/")[1]
-        let due_timer = 86400
-        if (due != "") {
-          const hour_min = due.split(":")
-          due_timer = parseInt(hour_min[0], 10) * 3600 + parseInt(hour_min[1], 10) * 60
-        }
-        if (timer >= start_timer && timer <= due_timer) {
-          isDisplay = true
-          selectedTimeRange = time_range
-          return
-        }
-      })
+          const due = time_range.split("/")[1]
+          let due_timer = 86400
+          if (due != "") {
+            const hour_min = due.split(":")
+            due_timer = parseInt(hour_min[0], 10) * 3600 + parseInt(hour_min[1], 10) * 60
+          }
+          if (timer >= start_timer && timer <= due_timer) {
+            isDisplay = true
+            selectedTimeRange = time_range
+            return
+          }
+        })
+      }
+
       if (isDisplay) {
         let tmpSchedule = {...schedule}
         tmpSchedule.time_ranges = selectedTimeRange
@@ -116,11 +120,15 @@ class ToDoList extends Component {
       if (ok) return
       if (x.id == xx.id) {
         form_data.append('id', x.id);
-        form_data.append('collection', x.collection);
-        form_data.append('active', x.active);
-        form_data.append('weekdays', x.weekdays);
-        form_data.append('time_ranges', x.time_ranges);
-        form_data.append('status', 'in_progress');
+        // form_data.append('collection', x.collection);
+        // form_data.append('active', x.active);
+        // form_data.append('weekdays', x.weekdays);
+        // form_data.append('time_ranges', x.time_ranges);
+        if (x.status == "available") {
+          form_data.append('status', 'in_progress');
+        } else {
+          form_data.append('status', x.status)
+        }
         ok = true
         return
       }
@@ -134,7 +142,7 @@ class ToDoList extends Component {
         console.log("res = ", res)
         await axios.get('/api/data_entry/collection/?name=' + xx.collection_name, {headers: this.headers})
         .then(res => {
-          let collectionToRedirect = { ...res.data[0], time_ranges: xx.time_ranges }
+          let collectionToRedirect = { ...res.data[0], time_ranges: xx.time_ranges, status: form_data['status'] }
           saveToLocalStorage("collection", collectionToRedirect)
           this.setState({redirect: "/frontend/user/collection_page"})
         });
@@ -184,11 +192,13 @@ class ToDoList extends Component {
                             <td dangerouslySetInnerHTML={{__html: due}} />
                             <td dangerouslySetInnerHTML={{__html: collect}} />                            
                             <td>
-                            {/* <Link to="/frontend/user/colletion_page" className="mx-auto btn btn-success btn-fill"> */}
-                            <Button variant="success" fill wd mx_auto type="submit" onClick={() => this.gotoCollect(x)}>
+                            { x.status == "available" && <Button variant="success" fill wd mx_auto type="submit" onClick={() => this.gotoCollect(x)}>
                               Collect
-                            </Button>
-                            {/* </Link> */}
+                            </Button>}
+                            { x.status != "available" && <Button variant="warning" fill wd mx_auto type="submit" onClick={() => this.gotoCollect(x)}>
+                              Re-Run
+                            </Button>}
+                            
                             </td>
                           </tr>);
                         })}

@@ -41,6 +41,7 @@ class CollectionPage extends Component {
 
   token = loadFromLocalStorage("token");
   collection = loadFromLocalStorage("collection")
+  user = loadFromLocalStorage("user")
   sports_ids = loadFromLocalStorage("sports_ids");
   
   headers = { 
@@ -233,7 +234,8 @@ class CollectionPage extends Component {
     }
     console.log("Ok")
     
-    let url = '/api/data_entry/collection/';    
+    let url = '/api/data_entry/collection/';   
+    let resSave = 0 
 
     this.state.events.map( (e) => {
       let form_data = new FormData();
@@ -252,23 +254,43 @@ class CollectionPage extends Component {
       }).then(res => {
         console.log("res = ", res)
           this.createNotification('success', 'The collected data has been saved successfully!', '')
+          resSave++
+          if (resSave == this.state.events.length) {
+            let form_data = new FormData();
+            let url = '/api/data_entry/schedule/';
+            const d = new Date()
+            const now = d.getUTCFullYear() + "-" + "0".concat((d.getUTCMonth() + 1)).substr(-2) + "-" + "0".concat(d.getDate()).substr(-2) + " " + "0".concat(d.getHours()).substr(-2) + ":" + "0".concat(d.getMinutes()).substr(-2) + ":" + "0".concat(d.getSeconds()).substr(-2)
+            form_data.append('id', this.collection.id);
+            form_data.append('status', this.user.id + "::" + now);
+            axios.put(url, form_data, {
+              headers: {
+                  'Authorization': 'token ' + this.token,
+              }
+            }).then(async (res) => {
+              this.setState({redirect: "/frontend/user/dashboard"})
+            }).catch(err => {console.log("Error"); console.log(err)})
+          }
           return
       }).catch(err => {console.log("Error"); console.log(err)})
     })
   }
 
   handleCancel = () => {
-    let form_data = new FormData();
-    let url = '/api/data_entry/schedule/';
-    form_data.append('id', this.collection.id);
-    form_data.append('status', 'available');
-    axios.put(url, form_data, {
-      headers: {
-          'Authorization': 'token ' + this.token,
-      }
-    }).then(async (res) => {
+    if (this.collection.status == "in_progress"){
+      let form_data = new FormData();
+      let url = '/api/data_entry/schedule/';
+      form_data.append('id', this.collection.id);
+      form_data.append('status', 'available');
+      axios.put(url, form_data, {
+        headers: {
+            'Authorization': 'token ' + this.token,
+        }
+      }).then(async (res) => {
+        this.setState({redirect: "/frontend/user/dashboard"})
+      }).catch(err => {console.log("Error"); console.log(err)})
+    } else {
       this.setState({redirect: "/frontend/user/dashboard"})
-    }).catch(err => {console.log("Error"); console.log(err)})
+    }
   }
 
   createNotification = (type, title, content) => {
