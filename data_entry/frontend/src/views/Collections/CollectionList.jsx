@@ -15,6 +15,10 @@ import axios from 'axios'
 import { loadFromLocalStorage } from "redux/reducers/auth";
 import { confirmAlert } from 'react-confirm-alert'; // Import
 import 'react-confirm-alert/src/react-confirm-alert.css'; // Import css
+import {NotificationContainer, NotificationManager} from 'react-notifications';
+import 'react-notifications/lib/notifications.css';
+import 'react-notifications/dist/react-notifications'
+
 
 class CollectionList extends Component {
   constructor(props) {
@@ -47,12 +51,31 @@ class CollectionList extends Component {
       buttons: [
         {
           label: 'Yes',
-          onClick: () => axios.delete('/api/data_entry/collection/?id=' + col_id, {'headers': this.headers})
-            .then(res => {
-              console.log("res = ", res.data)
-              this.setState({ collections: res.data });
-              console.log("this.state.collections = ", this.state.collections)
-            })
+          onClick: () => {
+            axios.get('/api/data_entry/schedule/', {'headers': this.headers})
+              .then(res => {
+                let scheduled = false
+                res.data.map(row => {
+                  if (scheduled) return
+                  console.log("row.collection, col_id", row.collection, col_id)
+                  if (row.collection == col_id) {
+                    scheduled = true
+                    return
+                  }
+                })
+                if (scheduled) {
+                  this.createNotification('error', '', 'The collection has already been scheduled. Please first delete the related scheduled tasks.')
+                  return
+                } else {
+                  axios.delete('/api/data_entry/collection/?id=' + col_id, {'headers': this.headers})
+                    .then(res => {
+                      console.log("res = ", res.data)
+                      this.setState({ collections: res.data });
+                      console.log("this.state.collections = ", this.state.collections)
+                    })
+                }
+              })
+          }
         },
         {
           label: 'No',
@@ -60,6 +83,19 @@ class CollectionList extends Component {
       ]
     });
   }
+
+  createNotification = (type, title, content) => {
+    switch (type) {
+        case 'info':
+        return NotificationManager.info(content);
+        case 'success':
+        return NotificationManager.success(content, title);
+        case 'warning':
+        return NotificationManager.warning(content, title, 3000);
+        case 'error':
+        return NotificationManager.error(content, title, 5000);
+    }
+  };
 
   render() {
     const remove = <Tooltip id="remove">Remove</Tooltip>;
@@ -110,6 +146,7 @@ class CollectionList extends Component {
               />
             </Col>
           </Row>
+          <NotificationContainer/>
         </Container>
       </div>
     );

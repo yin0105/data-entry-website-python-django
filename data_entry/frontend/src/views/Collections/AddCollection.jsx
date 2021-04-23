@@ -130,7 +130,10 @@ class AddCollection extends Component {
         }).then(res => {
             this.createNotification('success', 'New collection has been added successfully!', '')
             return
-        }).catch(err => this.createNotification('error', err, ''))
+        }).catch(err => {
+            this.createNotification('error', err, '')
+            return
+        })
     };
 
     createNotification = (type, title, content) => {

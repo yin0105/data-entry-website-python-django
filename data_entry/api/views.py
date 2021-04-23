@@ -203,7 +203,7 @@ class ScheduleView(APIView):
     def delete(self, request, format=None):
         Schedule.objects.filter(id=request.GET["id"]).delete()
         posts = Schedule.objects.all()
-        serializer = ScheduleSerializer(posts, many=True)
+        serializer = ScheduleCollectionSerializer(posts, many=True)
         return Response(serializer.data)
         # return Response(status=status.HTTP_204_NO_CONTENT)
 

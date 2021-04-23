@@ -55,7 +55,23 @@ class AddCollection extends Component {
   }
 
   handleCollectionChange = (collection) => {
-    this.setState({ collection });
+    axios.get('/api/data_entry/schedule/', {'headers': this.headers})
+      .then(res => {
+        let scheduled = false
+        res.data.map(row => {
+          if (scheduled) return
+          if (row.id == collection.value) {
+            scheduled = true
+            return
+          }
+        })
+        if (scheduled) {
+          this.createNotification('error', '', 'Already exists. Please edit the schedule from the schedule admin page.')
+          return
+        } else {
+          this.setState({ collection });
+        }
+      })
   }
 
   handleActiveChange = e => {
@@ -246,15 +262,15 @@ class AddCollection extends Component {
                         return (
                           <Row className="align-items-center">
                             <Col md={{ span: 11}}>
-                              <Row>
-                                    <FormLabel>Start Time : </FormLabel>
-                                    <this.TimeSelector row_index={i} col_name="start_time"/>
-                                    <FormLabel>Due : </FormLabel>
-                                    <this.TimeSelector row_index={i} col_name="due"/>
-                                    <FormLabel>Range Start : </FormLabel>
-                                    <this.TimeSelector row_index={i} col_name="range_start"/>
-                                    <FormLabel>Range End : </FormLabel>
-                                    <this.TimeSelector row_index={i} col_name="range_end"/>
+                              <Row className="evenly_space">
+                                <FormLabel>Start Time : </FormLabel>
+                                <this.TimeSelector row_index={i} col_name="start_time"/>
+                                <FormLabel>Due : </FormLabel>
+                                <this.TimeSelector row_index={i} col_name="due"/>
+                                <FormLabel>Range Start : </FormLabel>
+                                <this.TimeSelector row_index={i} col_name="range_start"/>
+                                <FormLabel>Range End : </FormLabel>
+                                <this.TimeSelector row_index={i} col_name="range_end"/>
                               </Row>
                             </Col>
                               

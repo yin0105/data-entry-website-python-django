@@ -54,7 +54,7 @@ class Schedule(models.Model):
         return self.collection 
 
     def __dir__(self):
-        return['collection', 'active', 'weekdays', 'time_ranges', 'status']                          
+        return['id', 'collection', 'active', 'weekdays', 'time_ranges', 'status']                          
 
 # #################################################################
 # class ClaimType(models.Model):

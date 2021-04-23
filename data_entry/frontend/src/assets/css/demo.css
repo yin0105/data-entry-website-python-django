@@ -161,7 +161,7 @@ td, th {
 }
 
 .time_selector .container-fluid .row > div {
-    width: 120px !important;
+    width: 100px !important;
 }
 
 input[list] {
@@ -172,4 +172,10 @@ input[list] {
     cursor: default;
     min-height: 38px;
     padding: 2px 10px;
+}
+
+.evenly_space {
+    align-items: baseline;
+    display: flex;
+    justify-content: space-around;
 }

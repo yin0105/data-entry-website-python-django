@@ -71,6 +71,40 @@ class ScheduleList extends Component {
     saveToLocalStorage("collection", x)
   }
 
+  handleRemoveClick = (sch_id) => {
+    confirmAlert({
+      title: 'Confirm to remove',
+      message: 'Are you sure to remove this schedule.',
+      buttons: [
+        {
+          label: 'Yes',
+          onClick: () => axios.delete('/api/data_entry/schedule/?id=' + sch_id, {'headers': this.headers})
+            .then(res => {
+              this.setState({ schedules: res.data });
+              this.createNotification('success', 'Remove Schedule', 'Selected shedule has been removed successfully!')
+              return
+            })
+        },
+        {
+          label: 'No',
+        }
+      ]
+    });
+  }
+
+  createNotification = (type, title, content) => {
+    switch (type) {
+        case 'info':
+        return NotificationManager.info(content);
+        case 'success':
+        return NotificationManager.success(content, title);
+        case 'warning':
+        return NotificationManager.warning(content, title, 3000);
+        case 'error':
+        return NotificationManager.error(content, title, 5000);
+    }
+};
+
   render() {
     const edit = <Tooltip id="edit">Edit Schedule</Tooltip>;
     const remove = <Tooltip id="remove">Remove</Tooltip>;
@@ -137,7 +171,7 @@ class ScheduleList extends Component {
                                 </Button>
                               </OverlayTrigger>
                               <OverlayTrigger placement="top" overlay={remove}>
-                                <Button simple bsStyle="danger" bsSize="xs">
+                                <Button simple bsStyle="danger" bsSize="xs" onClick={() => this.handleRemoveClick(x.id)}>
                                   <i className="fa fa-times" />
                                 </Button>
                               </OverlayTrigger>
@@ -160,6 +194,7 @@ class ScheduleList extends Component {
               />
             </Col>
           </Row>
+          <NotificationContainer/>
         </Container>
       </div>
     );
