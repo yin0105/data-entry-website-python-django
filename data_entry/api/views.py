@@ -167,7 +167,26 @@ class CollectionView(APIView):
 class ScheduleView(APIView):
     def put(self, request, format=None):  
         instance = get_object_or_404(Schedule.objects.all(), id=request.data["id"])
-        serializer = ScheduleCollectionSerializer(instance, data=request.data)
+
+        ordinary_dict = {}
+        ordinary_dict["id"] = instance.id
+        ordinary_dict["collection"] = instance.collection.id
+        ordinary_dict["active"] = instance.active
+        ordinary_dict["weekdays"] = instance.weekdays
+        ordinary_dict["time_ranges"] = instance.time_ranges
+        ordinary_dict["status"] = instance.status
+
+        req = request.data
+        if "collection" in req: ordinary_dict["collection"] = req["collection"]
+        if "active" in req: ordinary_dict["active"] = req["active"]
+        if "weekdays" in req: ordinary_dict["weekdays"] = req["weekdays"]
+        if "time_ranges" in req: ordinary_dict["time_ranges"] = req["time_ranges"]
+        if "status" in req: ordinary_dict["status"] = req["status"]
+
+        query_dict = QueryDict('', mutable=True)
+        query_dict.update(ordinary_dict)
+
+        serializer = ScheduleCollectionSerializer(instance, data=query_dict)
 
         # validate and update
         if serializer.is_valid():

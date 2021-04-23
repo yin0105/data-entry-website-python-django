@@ -44,22 +44,17 @@ class Schedule(models.Model):
     active = models.BooleanField(default=False)
     weekdays = models.CharField( max_length=30, verbose_name='weekdays')
     time_ranges = models.TextField(max_length=1000, blank=True)
-    status = models.CharField(
-        max_length=30,
-        default='available',
-        choices=(
-            ('avaiable', 'Available'),
-            ('in_progress', 'In Progress'),
-            ('completed', 'Completed')
-        )
-    )
+    status = models.CharField( max_length=30, default='available')
 
     # Metadata
     class Meta:
         ordering = ['collection']
 
     def __str__(self):
-        return self.collection                           
+        return self.collection 
+
+    def __dir__(self):
+        return['collection', 'active', 'weekdays', 'time_ranges', 'status']                          
 
 # #################################################################
 # class ClaimType(models.Model):

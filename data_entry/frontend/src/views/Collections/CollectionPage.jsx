@@ -232,7 +232,6 @@ class CollectionPage extends Component {
       return
     }
     console.log("Ok")
-
     
     let url = '/api/data_entry/collection/';    
 
@@ -256,8 +255,20 @@ class CollectionPage extends Component {
           return
       }).catch(err => {console.log("Error"); console.log(err)})
     })
+  }
 
-
+  handleCancel = () => {
+    let form_data = new FormData();
+    let url = '/api/data_entry/schedule/';
+    form_data.append('id', this.collection.id);
+    form_data.append('status', 'available');
+    axios.put(url, form_data, {
+      headers: {
+          'Authorization': 'token ' + this.token,
+      }
+    }).then(async (res) => {
+      this.setState({redirect: "/frontend/user/dashboard"})
+    }).catch(err => {console.log("Error"); console.log(err)})
   }
 
   createNotification = (type, title, content) => {
@@ -275,6 +286,9 @@ class CollectionPage extends Component {
 
   
   render() {
+    if (this.state.redirect) {
+      return <Redirect to={this.state.redirect} />
+    }
     return (
       <div className="main-content">
         <Container fluid>
@@ -378,9 +392,7 @@ class CollectionPage extends Component {
                         legend={
                             <Row>
                                 <Col md={{ span: 2, offset: 4 }} className="d-flex justify-content-center">
-                                  <Link to="/frontend/user/dashboard" className="mx-auto btn btn-warning btn-fill">
-                                    Cancel
-                                  </Link>
+                                  <Button variant="warning" className="btn-fill" onClick={() => this.handleCancel()}>Cancel</Button>
                                 </Col>
                                 <Col md={{ span: 2}} className="d-flex justify-content-center">
                                     <Button variant="primary" className="btn-fill" onClick={() => this.handleSubmit()}>Submit</Button>

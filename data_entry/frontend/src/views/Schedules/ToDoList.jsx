@@ -59,7 +59,7 @@ class ToDoList extends Component {
     this.state.schedules.map((schedule) => {
       let isDisplay = false
       let selectedTimeRange = ""
-      schedule.weekdays[weekday - 1] == "1" && schedule.time_ranges.split("::").map((time_range) => {
+      schedule.status == 'available' && schedule.active && schedule.weekdays[weekday - 1] == "1" && schedule.time_ranges.split("::").map((time_range) => {
         if (isDisplay) return
         const start_time = time_range.split("/")[0]
         let start_timer = 0
@@ -69,7 +69,7 @@ class ToDoList extends Component {
         }
 
         const due = time_range.split("/")[1]
-        let due_timer = 0
+        let due_timer = 86400
         if (due != "") {
           const hour_min = due.split(":")
           due_timer = parseInt(hour_min[0], 10) * 3600 + parseInt(hour_min[1], 10) * 60
@@ -134,13 +134,9 @@ class ToDoList extends Component {
         console.log("res = ", res)
         await axios.get('/api/data_entry/collection/?name=' + xx.collection_name, {headers: this.headers})
         .then(res => {
-          console.log("res_2 = ", res)
           let collectionToRedirect = { ...res.data[0], time_ranges: xx.time_ranges }
           saveToLocalStorage("collection", collectionToRedirect)
-          console.log("col = ", collectionToRedirect)
           this.setState({redirect: "/frontend/user/collection_page"})
-          console.log("this.state.redirect = " , this.state.redirect)
-          
         });
       }).catch(err => {console.log("Error"); console.log(err)})
     }
