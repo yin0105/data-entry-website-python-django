@@ -355,13 +355,12 @@ class CollectionPage extends Component {
                                         {e.fields.map((x, j) => {
                                           if (x.type == 'teamname') {
                                             return (
-                                              <td style={{ minWidth: 120 }}>
+                                              <td style={{ minWidth: 150 }}>
                                                 <Select options={[{value: e.home.fullName, label: e.home.fullName}, {value: e.away.fullName, label: e.away.fullName}]} onChange={e => this.handleSelectorValueChange(e, i, j)}/>
                                               </td>)
                                           } else if (x.type == 'freeform') {
                                             return (
-                                              <td style={{ minWidth: 120 }}>
-                                                {/* <Select options={this.state.freeform_data[x.name]} onChange={e => this.handleSelectorValueChange(e, i, j)} /> */}
+                                              <td>
                                                 <input list={x.name} onChange={e => this.handleListValueChange(e, i, j)} />
                                                 
                                               </td>)
