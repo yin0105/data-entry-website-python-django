@@ -91,14 +91,22 @@ class CollectionView(APIView):
         # return Response(status=status.HTTP_204_NO_CONTENT)
 
     def get(self, request, *args, **kwargs):
-        print([i for i in request.GET])
-        posts = ""
-        if "name" in request.GET :
-            posts = Collection.objects.filter(name = request.GET["name"])
+        if "get_freeform_data" in request.GET :
+            table_name = "col_" + request.GET["name"]
+            field_name = request.GET["field"]
+            sql = "SELECT DISTINCT `" + field_name + "` FROM `" + table_name + "` ORDER BY `" + field_name + "`"
+            with connection.cursor() as cursor:
+                cursor.execute(sql)
+                data = [row[0] for row in cursor.fetchall()]
+                return Response({"res": "::".join(data)})
         else:
-            posts = Collection.objects.all()
-        serializer = CollectionSerializer(posts, many=True)
-        return Response(serializer.data)
+            posts = ""
+            if "name" in request.GET :
+                posts = Collection.objects.filter(name = request.GET["name"])
+            else:
+                posts = Collection.objects.all()
+            serializer = CollectionSerializer(posts, many=True)
+            return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
         req = request.data

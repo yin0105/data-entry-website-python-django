@@ -1,32 +1,12 @@
-/*!
-
-=========================================================
-* Light Bootstrap Dashboard PRO React - v1.2.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/light-bootstrap-dashboard-pro-react
-* Copyright 2019 Creative Tim (https://www.creative-tim.com)
-
-* Coded by Creative Tim
-
-=========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-*/
 import React, { Component } from "react";
 import {
   Container,
   Row,
   Col,
   Table,
-  OverlayTrigger,
-  Tooltip,
-  FormGroup,
   FormLabel,
   FormText,
   FormControl,
-  Radio,
   FormCheck,
 } from "react-bootstrap";
 import { Link } from "react-router-dom"
@@ -55,6 +35,7 @@ class CollectionPage extends Component {
       isSearch: false,
       searchString: '',
       tmpSearchString: '',
+      freeform_data: {},
     }
   };
 
@@ -66,12 +47,32 @@ class CollectionPage extends Component {
     'Authorization': 'token ' + this.token,
   };
 
+  options = [
+    {value: 'ab', label: 'ab'},
+    {value: 'cd', label: 'cd'},
+  ]
+
   componentDidMount() {    
     const times = this.collection.time_ranges.split("/")
     this.setState({range_start: times[2]})
     this.setState({range_end: times[3]})
     this.setState({field_names: this.collection.field_names.split("::")})
     this.setState({field_types: this.collection.field_types.split("::")})
+    this.collection.field_types.split("::").map((x, i) => {
+      if (x == "freeform") {
+        const field_name = this.collection.field_names.split("::")[i]
+        let freeform = {...this.state.freeform_data}
+        let newElem = [{label: '', value: ''}]
+        axios.get("/api/data_entry/collection/?get_freeform_data=1&name=" + this.collection.name + "&field=" + field_name, {'headers': this.headers})
+          .then(res => {
+            res.data.res.split("::").map(v => {
+              newElem.push({label: v, value: v})
+            })
+          })
+        freeform[field_name] = newElem
+        this.setState({freeform_data: freeform})
+      }
+    })
     this.getEvents(false)
   }
 
@@ -95,6 +96,7 @@ class CollectionPage extends Component {
       axios.get(url, {'headers': this.headers})
         .then(res => {
           const resData = JSON.parse(res.data[0].data)
+          console.log("resData = ", resData)
           resData.events.map(e => {
             let fields = []
             this.collection.field_types.split("::").map((x, i) => {
@@ -135,6 +137,7 @@ class CollectionPage extends Component {
             }
             list.push(eventRow)
           })
+          console.log("list = ", list)
           this.setState({events: list})
         });
     })
@@ -174,8 +177,16 @@ class CollectionPage extends Component {
   }
 
   handleSelectorValueChange = (e, rowIndex, colIndex) => {
+    console.log("e.value = ", e.value)
     let list = [...this.state.events]
     list[rowIndex].fields[colIndex].value = e.value
+    this.setState({events: list})
+  }
+
+  handleListValueChange = (e, rowIndex, colIndex) => {
+    console.log("e.target.value = ", e.target.value)
+    let list = [...this.state.events]
+    list[rowIndex].fields[colIndex].value = e.target.value
     this.setState({events: list})
   }
 
@@ -270,6 +281,17 @@ class CollectionPage extends Component {
             <div className="d-flex">
                 <FormLabel className="mx-auto h1 "><b>Collection Page</b></FormLabel>
             </div>
+            {this.state.field_types.map((x, i) => {
+              if (x == "freeform") {
+                return (
+                  <datalist id={this.state.field_names[i]}>
+                    {this.state.freeform_data[this.state.field_names[i]].map((ff) => {
+                      return <option value={ff.value}/>
+                    })}
+                  </datalist>
+                )
+              }
+            })}
             <Row className="align-items-baseline">
                 <Col md={{ span: 4, offset: 1 }}>
                     <FormLabel>Collecting <b className="mx-4">{this.collection.name}</b></FormLabel>
@@ -332,7 +354,17 @@ class CollectionPage extends Component {
                                         <td><FormText>{e.sportName}</FormText></td>
                                         {e.fields.map((x, j) => {
                                           if (x.type == 'teamname') {
-                                            return <td style={{ minWidth: 150 }}><Select options={[{value: e.home.fullName, label: e.home.fullName}, {value: e.away.fullName, label: e.away.fullName}]} onChange={e => this.handleSelectorValueChange(e, i, j)}/></td>
+                                            return (
+                                              <td style={{ minWidth: 120 }}>
+                                                <Select options={[{value: e.home.fullName, label: e.home.fullName}, {value: e.away.fullName, label: e.away.fullName}]} onChange={e => this.handleSelectorValueChange(e, i, j)}/>
+                                              </td>)
+                                          } else if (x.type == 'freeform') {
+                                            return (
+                                              <td style={{ minWidth: 120 }}>
+                                                {/* <Select options={this.state.freeform_data[x.name]} onChange={e => this.handleSelectorValueChange(e, i, j)} /> */}
+                                                <input list={x.name} onChange={e => this.handleListValueChange(e, i, j)} />
+                                                
+                                              </td>)
                                           } else {
                                             return <td><FormControl type="text" placeholder={x.type} onChange={e => this.handleFieldValueChange(e, i, j)}/></td>
                                           }
