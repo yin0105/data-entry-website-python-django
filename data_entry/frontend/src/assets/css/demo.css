@@ -179,3 +179,7 @@ input[list] {
     display: flex;
     justify-content: space-around;
 }
+
+.invalid-feedback {
+    display: inline !important;
+}

@@ -22,6 +22,9 @@ import AuthHelper from 'helpers/authHelper.jsx';
 import {validateEmail} from 'helpers/commonHelper.jsx';
 import { saveToLocalStorage, loadFromLocalStorage } from 'redux/reducers/auth'
 import axios from 'axios'
+import {NotificationContainer, NotificationManager} from 'react-notifications';
+import 'react-notifications/lib/notifications.css';
+import 'react-notifications/dist/react-notifications'
 
 class LoginPage extends Component {
   constructor(props) {
@@ -54,16 +57,21 @@ class LoginPage extends Component {
     let parsed = queryString.parse(this.props.location.search);
 
     if (username === '') {
-      errors.username = 'Email is required';
+      errors.username = 'User name is required';
       this.setState({errors});
       return;
+    } else {
+      errors.username = '';
+      this.setState({errors})
     }
     if (password === '') {
       errors.password = 'Password is required';
       this.setState({errors});
       return;
+    } else {
+      errors.password = '';
+      this.setState({errors})
     }
-
 
     this.props.login(username, password)
       .then(
@@ -92,8 +100,8 @@ class LoginPage extends Component {
             );
         }
       ).catch(err => {
-        console.log("Login Error:::");
-        console.log(err.response);
+        this.createNotification('error', 'Please use correct username and password', '')
+        return
       });
 
     
@@ -104,6 +112,19 @@ class LoginPage extends Component {
     if (errors[e.target.name] !== '') {
       errors[e.target.name] = '';
       this.setState(errors); 
+    }
+  };
+
+  createNotification = (type, title, content) => {
+    switch (type) {
+        case 'info':
+        return NotificationManager.info(content);
+        case 'success':
+        return NotificationManager.success(content, title);
+        case 'warning':
+        return NotificationManager.warning(content, title, 3000);
+        case 'error':
+        return NotificationManager.error(content, title, 5000);
     }
   };
 
@@ -140,6 +161,7 @@ class LoginPage extends Component {
                       <FormGroup>
                         <FormLabel>Password</FormLabel>
                         <FormControl placeholder="Password" type="password" name="password" autoComplete="off"/>
+                        <FormFeedback className="text-danger">{errors.password}</FormFeedback>
                       </FormGroup>
                     </div>
                   }
@@ -148,7 +170,7 @@ class LoginPage extends Component {
                       <Button variant="primary" fill wd type="submit">
                         Login
                       </Button>
-                      {/* <FormText className="text-dark">Don't you have an account? <Link to="/frontend/auth/register-page"> Register</Link></FormText> */}
+                      <FormText className="text-dark">Don't you have an account? <Link to="/frontend/auth/register-page"> Register</Link></FormText>
                     </FormGroup>
                   }
                   ftTextCenter
@@ -156,6 +178,7 @@ class LoginPage extends Component {
               </Form>
             </Col>
           </Row>
+          <NotificationContainer/>
         </Container>
       );
     }

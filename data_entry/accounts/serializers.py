@@ -6,13 +6,18 @@ CustomUser = get_user_model()
 
 class CustomUserSerializer(serializers.ModelSerializer):
     email = serializers.CharField(
-        write_only=True, validators=[validators.UniqueValidator(
+        validators=[validators.UniqueValidator(
             message='This email already exists',
             queryset=CustomUser.objects.all()
         )]
     )
+    username = serializers.CharField(
+        validators=[validators.UniqueValidator(
+            message='This username already exists',
+            queryset=CustomUser.objects.all()
+        )]
+    )
     password = serializers.CharField(write_only=True)
-    username = serializers.CharField(required=True)
     role = serializers.CharField(required=True)
 
     class Meta:
