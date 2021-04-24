@@ -103,7 +103,7 @@ class ScheduleList extends Component {
         case 'error':
         return NotificationManager.error(content, title, 5000);
     }
-  };
+};
 
   render() {
     const edit = <Tooltip id="edit">Edit Schedule</Tooltip>;

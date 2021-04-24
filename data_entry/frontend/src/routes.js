@@ -10,6 +10,7 @@ import CollectionList from "views/Collections/CollectionList";
 import CollectionPage from "views/Collections/CollectionPage";
 import CollectionStatus from "views/Collections/CollectionStatus";
 import AddCollection from "views/Collections/AddCollection";
+import UserList from "views/User/UserList"
 
 var routes = [
   {
@@ -66,12 +67,12 @@ var routes = [
     component: UpdateSchedule
   },
   {
-    path: "/charts",
+    path: "/users",
     layout: "/frontend/admin",
     name: "Users",
     icon: "pe-7s-users",
     category: ["admin",],
-    component: ScheduleList
+    component: UserList
   },    
   {
     path: "/dashboard",
