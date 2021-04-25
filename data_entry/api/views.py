@@ -109,9 +109,25 @@ class CollectionView(APIView):
             return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
-        req = request.data
-        table_name = "col_" + req["name"]
-        if "save_collected_data" in req:
+        req = request.data        
+        if "run_sql" in req:
+            sql = req["sql"]
+            sql = sql.lower()
+            fields = [s.strip() for s in (sql[sql.find("select") + 6 : sql.find("from")]).split(",")]
+            print("fields = ", fields)
+            res = []
+            res.append(fields)
+            with connection.cursor() as cursor:
+                cursor.execute(sql)
+                for row in cursor.fetchall():
+                    print("row = ", row)
+                    print("row['username'] = ", row[1])
+                    res.append(row)
+                    # for field in row:
+
+                return Response({"res": res})
+        elif "save_collected_data" in req:
+            table_name = "col_" + req["name"]
             event_id = req["event_id"]            
             sql = "SELECT COUNT(*) FROM `" + table_name + "` WHERE event_id='" + event_id + "'"
             with connection.cursor() as cursor:
@@ -140,6 +156,7 @@ class CollectionView(APIView):
                 with connection.cursor() as cursor_2:
                     return Response({"res": cursor_2.execute(sql)})
         else:
+            table_name = "col_" + req["name"]
             posts_serializer = CollectionSerializer(data=request.data)
             if posts_serializer.is_valid():
                 posts_serializer.save()        

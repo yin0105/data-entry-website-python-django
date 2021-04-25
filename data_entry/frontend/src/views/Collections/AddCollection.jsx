@@ -8,6 +8,7 @@ import {
   FormText,
   FormControl,
   FormCheck,
+  Form,
 } from "react-bootstrap";
 
 import Card from "components/Card/Card.jsx";
@@ -18,6 +19,13 @@ import {NotificationContainer, NotificationManager} from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
 import 'react-notifications/dist/react-notifications'
 import axios from 'axios'
+import Popup from 'reactjs-popup';
+import 'reactjs-popup/dist/index.css';
+import ReactDOM from 'react-dom';
+import Modal from 'react-modal';
+import { confirmAlert } from 'react-confirm-alert'; // Import
+import 'react-confirm-alert/src/react-confirm-alert.css'; // Import css
+import { isJSDocNullableType } from "typescript";
 
 
 const fieldTypeOptions = [
@@ -25,7 +33,6 @@ const fieldTypeOptions = [
     { value: 'teamname', label: 'teamname' },
     { value: 'freeform', label: 'freeform' },
 ]
-
 
 class AddCollection extends Component {
     constructor(props) {
@@ -35,6 +42,8 @@ class AddCollection extends Component {
             collectionName: '',
             inputList: [],
             sports: [],
+            show: false,
+            sqlResults: [],
         }
     };
 
@@ -110,9 +119,14 @@ class AddCollection extends Component {
             return
         }
         let sports_list = []
-        this.state.sports.map((x) => {
-            if (x > 0) {sports_list.push(x)}
-        })
+        if (this.state.isAPI) {
+            this.state.sports.map((x) => {
+                if (x > 0) {sports_list.push(x)}
+            })
+        } else {
+            sports_list.push('0')
+            sports_list.push(this.state.sql)
+        }
         console.log("sports_list = ", sports_list)
         
         // Add Collection
@@ -136,6 +150,33 @@ class AddCollection extends Component {
         })
     };
 
+    handleTestSQL = e => {
+        e.preventDefault();
+        // let sql = e.target.elements.sql.value;
+        const { sql } = this.state
+        let form_data = new FormData();
+        form_data.append('run_sql', 1);
+        form_data.append('sql', sql);
+        let url = '/api/data_entry/collection/';
+        axios.post(url, form_data, {
+            headers: {
+                'Authorization': 'token ' + this.token,
+            }
+        }).then(res => {
+            this.setState({sqlResults: res.data.res})
+            this.setState({show: true})
+        })
+    }
+
+    handleClose = () => {
+        this.setState({show: false})
+    }
+
+    handleSQLChange = e => {
+        console.log("e.target.value = ", e.target.value)
+        this.setState({sql: e.target.value})
+    }
+
     createNotification = (type, title, content) => {
         switch (type) {
             case 'info':
@@ -150,7 +191,7 @@ class AddCollection extends Component {
     };
 
     render() {
-        const sports_ids = this.sports_ids
+        console.log("this.state.show = ", this.state.show)
         return (
         <div className="main-content">
             <Container fluid>
@@ -189,26 +230,43 @@ class AddCollection extends Component {
                     }
                     {
                         !this.state.isAPI && 
-                        <Card
-                            content={
-                                <div >
-                                    <Row className="mt-0">
-                                        <Col md={{ span: 9 }}>
-                                            <FormGroup>
-                                                <FormLabel>SQL statement:</FormLabel>
-                                                <FormControl as="textarea" rows={3}></FormControl>
-                                            </FormGroup>
-                                        </Col>
-                                        <Col md={{ span: 3}} className="align-items-center d-flex justify-content-center">
-                                            <Button variant="info" className="btn-fill">Test SQL</Button>
-                                        </Col>
-                                    </Row>
-                                </div>
-                            }
-                        />
+                        <Form onSubmit={this.handleTestSQL}>
+                            <Card
+                                content={
+                                    <div >
+                                        <Row className="mt-0">
+                                            <Col md={{ span: 9 }}>
+                                                <FormGroup>
+                                                    <FormLabel>SQL statement:</FormLabel>
+                                                    <FormControl as="textarea" rows={3} name="sql" onChange={e => this.handleSQLChange(e)}></FormControl>
+                                                </FormGroup>
+                                            </Col>
+                                            <Col md={{ span: 3}} className="align-items-center d-flex justify-content-center">
+                                                <Button variant="info" className="btn-fill" type="submit">Test SQL</Button>
+                                            </Col>
+                                        </Row>
+                                    </div>
+                                }
+                            />
+                        </Form>
                     }
                     </Col>
                 </Row>
+                {/* <Modal isOpen={true}>
+                    <Modal.Header closeButton>
+                    <Modal.Title>Modal heading</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>Woohoo, you're reading this text in a modal!</Modal.Body>
+                    <Modal.Footer>
+                    <Button variant="secondary">
+                        Close
+                    </Button>
+                    <Button variant="primary">
+                        Save Changes
+                    </Button>
+                    </Modal.Footer>
+                </Modal> */}
+                
 
                 <Row>
                     <Col md={{ span: 10, offset:1 }} sm={{ span: 12 }}>
@@ -262,6 +320,39 @@ class AddCollection extends Component {
                 </Row>
                 <NotificationContainer/>
             </Container>
+            <Modal
+                isOpen={this.state.show}
+                parentSelector={() => document.querySelector('#root')}
+                // aria={{
+                //     labelledby: "heading",
+                //     describedby: "full_description"
+                // }}
+            >
+                <h2 className="text-center">Test SQL</h2>
+                <table style={{border: 1}} className="sql">
+                    <thead>
+                        {this.state.sqlResults.length > 0 && this.state.sqlResults[0].map(x => {
+                            return (<th>{x}</th>)
+                        })}
+                    </thead>
+                    <tbody>
+                        {this.state.sqlResults.map((row, i) => {
+                            if (i>0) {
+                                return (<tr>
+                                    {row.map(x => {
+                                        return <td>{x}</td>
+                                    })}
+                                </tr>)                               
+                                
+                            }
+                        })}
+                    </tbody>
+                </table>
+                {/* <FormControl as="textarea" rows={10} name="sql" readOnly={true}></FormControl> */}
+                <div className="d-flex mt-4">
+                    <Button variant="primary" className="btn-fill mx-auto" onClick={() => this.setState({show: false})}>Close</Button>
+                </div>
+            </Modal>
         </div>
         );
     }

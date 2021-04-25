@@ -183,3 +183,13 @@ input[list] {
 .invalid-feedback {
     display: inline !important;
 }
+
+.ReactModal__Content {
+    margin-right: calc(50% - 580px);
+    margin-left: calc( 50% - 320px );
+    height: 600px;
+}
+
+.sql th, .sql td, table.sql {
+    border: solid 1px;
+}
