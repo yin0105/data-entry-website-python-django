@@ -60,7 +60,7 @@ class AddCollection extends Component {
         let scheduled = false
         res.data.map(row => {
           if (scheduled) return
-          if (row.id == collection.value) {
+          if (row.collection == collection.value) {
             scheduled = true
             return
           }

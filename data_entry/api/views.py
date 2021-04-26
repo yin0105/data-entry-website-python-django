@@ -109,7 +109,8 @@ class CollectionView(APIView):
             return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
-        req = request.data        
+        req = request.data   
+        now = timezone.now().strftime("%Y-%m-%d %H:%M:%S")     
         if "run_sql" in req:
             sql = req["sql"]
             sql = sql.lower()
@@ -135,46 +136,39 @@ class CollectionView(APIView):
                     field_values = ""
                     for field in req:
                         if field != "name" and field != "save_collected_data" and field != "no_api":
-                            if field_names == "":
-                                field_names += field
-                            else:
-                                field_names += ", " + field
-
-                            if field_values == "":
-                                field_values += req[field]
-                            else:
-                                field_values += ", " + req[field]
-                    sql += "(" + field_names + ") VALUES (" + field_values + ")"
+                            field_names +=  field + ", "
+                            field_values += req[field] + ", "
+                    sql += "(" + field_names + "col_dt) VALUES (" + field_values + "'" + now + "')"
                     print("sql = ", sql)
                     return Response({"res": cursor.execute(sql)})
             else:
-                event_id = req["event_id"]            
-                sql = "SELECT COUNT(*) FROM `" + table_name + "` WHERE event_id='" + event_id + "'"
-                with connection.cursor() as cursor:
-                    cursor.execute(sql)
-                    row = cursor.fetchone()
-                    now = timezone.now().strftime("%Y-%m-%d %H:%M:%S")
-                    if (row[0] > 0):
-                        sql = "UPDATE `" + table_name + "` SET "
-                        for field in req:
-                            if field != "name" and field != "event_id" and field != "save_collected_data":
-                                sql += field + "=" + req[field] + ", "
-                        sql += "col_dt='" + now + "' WHERE event_id='" + event_id + "'"
-                    else:
-                        sql = "INSERT INTO `" + table_name + "` "
-                        field_names = ""
-                        field_values = ""
-                        for field in req:
-                            if field != "name" and field != "save_collected_data":
-                                field_names += field + ", "
-                                if field == "event_id":
-                                    field_values += "'" + req[field] + "', "
-                                else:
-                                    field_values += req[field] + ", "
-                        sql += "(" + field_names + "col_dt) VALUES (" + field_values + "'" + now + "')"
-                    print("sql = ", sql)
-                    with connection.cursor() as cursor_2:
-                        return Response({"res": cursor_2.execute(sql)})
+                # event_id = req["event_id"]            
+                # sql = "SELECT COUNT(*) FROM `" + table_name + "` WHERE event_id='" + event_id + "'"
+                # with connection.cursor() as cursor:
+                #     cursor.execute(sql)
+                #     row = cursor.fetchone()
+                #     now = timezone.now().strftime("%Y-%m-%d %H:%M:%S")
+                #     if (row[0] > 0):
+                #         sql = "UPDATE `" + table_name + "` SET "
+                #         for field in req:
+                #             if field != "name" and field != "event_id" and field != "save_collected_data":
+                #                 sql += field + "=" + req[field] + ", "
+                #         sql += "col_dt='" + now + "' WHERE event_id='" + event_id + "'"
+                    # else:
+                sql = "INSERT INTO `" + table_name + "` "
+                field_names = ""
+                field_values = ""
+                for field in req:
+                    if field != "name" and field != "save_collected_data":
+                        field_names += field + ", "
+                        if field == "event_id":
+                            field_values += "'" + req[field] + "', "
+                        else:
+                            field_values += req[field] + ", "
+                sql += "(" + field_names + "col_dt) VALUES (" + field_values + "'" + now + "')"
+                print("sql = ", sql)
+                with connection.cursor() as cursor_2:
+                    return Response({"res": cursor_2.execute(sql)})
         else:
             table_name = "col_" + req["name"]
             posts_serializer = CollectionSerializer(data=request.data)
@@ -189,34 +183,32 @@ class CollectionView(APIView):
                     fromFields = ["`" + s.strip() + "`" for s in (reqSql[reqSql.find("select") + 6 : reqSql.find("from")]).split(",")]
                     fromTable = (reqSql[reqSql.find("from") + 5:].strip()).split(" ")[0]
                     print("fromTable = ", fromTable)
-                    sql = "CREATE TABLE `data_entry`.`" + table_name + "` ENGINE=INNODB COLLATE = utf8mb4_general_ci COMMENT = ''  SELECT " + (", ".join(fromFields)) + " FROM `data_entry`.`" + fromTable + "` WHERE 1 = 0"
+                    sql = "CREATE TABLE `" + table_name + "` ENGINE=INNODB COLLATE = utf8mb4_general_ci COMMENT = ''  SELECT " + (", ".join(fromFields)) + " FROM `" + fromTable + "` WHERE 1 = 0"
                     print("sql = ", sql)
                     try:
                         with connection.cursor() as cursor:
                             cursor.execute(sql)
-                            # cursor.execute("ALTER TABLE `" + table_name + "` ADD COLUMN `auto_id` BIGINT NOT NULL AUTO_INCREMENT , ADD PRIMARY KEY (`id`); ")
+                            cursor.execute("ALTER TABLE `" + table_name + "` ADD COLUMN `auto_id` BIGINT NOT NULL AUTO_INCREMENT FIRST, ADD PRIMARY KEY (`auto_id`); ")
                             for (name, type) in zip(field_names, field_types):
-                                print(" con 1")
                                 sql = "`" + name + "` "
                                 if type == "numeric":
                                     sql += "FLOAT(11) NOT NULL "
                                 else:
                                     sql += "VARCHAR(255) NOT NULL "
-                                print(" con 2 : ", sql)
-                                cursor.execute("ALTER TABLE `data_entry`.`" + table_name + "` ADD COLUMN " + sql)
-                                print(" con 3")
+                                cursor.execute("ALTER TABLE `" + table_name + "` ADD COLUMN " + sql)
+                            cursor.execute("ALTER TABLE `" + table_name + "` ADD COLUMN `col_dt` DATETIME NOT NULL")
                             return Response({"res": "success"})
                     except:
                         return Response({"res": "fail"})
                 else:
-                    sql = "CREATE TABLE `" + table_name + "` (`event_id` VARCHAR(255) NOT NULL, "
+                    sql = "CREATE TABLE `" + table_name + "` (`id` BIGINT NOT NULL AUTO_INCREMENT, `event_id` VARCHAR(255) NOT NULL, "
                     for (name, type) in zip(field_names, field_types):
                         sql += "`" + name + "` "
                         if type == "numeric":
                             sql += "FLOAT(11) NOT NULL, "
                         else:
                             sql += "VARCHAR(255) NOT NULL, "
-                    sql += "`col_dt` DATETIME NOT NULL, PRIMARY KEY (`event_id`) ); "
+                    sql += "`col_dt` DATETIME NOT NULL, PRIMARY KEY (`id`) ); "
                     with connection.cursor() as cursor:
                         try:
                             cursor.execute(sql)
@@ -229,7 +221,8 @@ class CollectionView(APIView):
 
 
 class ScheduleView(APIView):
-    def put(self, request, format=None):  
+    def put(self, request, format=None): 
+        print("id = ", request.data["id"]) 
         instance = get_object_or_404(Schedule.objects.all(), id=request.data["id"])
 
         ordinary_dict = {}
@@ -282,208 +275,11 @@ class ScheduleView(APIView):
         return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
-        # queryDict = request.data
-        # # myDict = dict(queryDict.iterlists())
-        # myDict = dict(request.POST.lists())
-        # # myDict = { key: queryDict.getlist(key) for key in queryDict.fromkeys()}
-        # print("#"*50, myDict['collection'])
-        # myDict["collection"] = id = int(myDict["collection"][0])
-        # if myDict["active"][0] == "1":
-        #     myDict["active"] = True
-        # else:
-        #     myDict["active"] = False
-        # myDict["weekdays"] = myDict["weekdays"][0]
-        # myDict["time_ranges"] = myDict["time_ranges"][0]
-
-
-        # query_dict = QueryDict('', mutable=True)
-        # query_dict.update(myDict)
-        # posts_serializer = ScheduleSerializer(data=query_dict)
+        print("collection = ", request.data["collection"])
         posts_serializer = ScheduleSerializer(data=request.data)
         if posts_serializer.is_valid():
             posts_serializer.save()
             return Response({"res": "OK"})
         else:
             print('error', posts_serializer.errors)
-            return Response(posts_serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
-# def aws_session(region_name='us-east-1'):
-#     return boto3.session.Session(aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
-#                                 aws_secret_access_key=os.getenv('AWS_ACCESS_KEY_SECRET'),
-#                                 region_name=region_name)
-
-
-# def upload_file_to_bucket(file_path, folder_name):
-#     session = aws_session()
-#     s3_resource = session.resource('s3')
-#     file_dir, file_name = os.path.split(file_path)
-
-#     bucket = s3_resource.Bucket(s3_bucket)
-#     bucket.upload_file(
-#       Filename=file_path,
-#       Key=folder_name + "/" + file_name,
-#       ExtraArgs={'ACL': 'public-read'}
-#     )
-
-#     s3_url = f"https://{s3_bucket}.s3.amazonaws.com/{file_name}"
-#     return s3_url
-
-
-# def delete_folder_from_bucket(folder_name):
-#     s3_client = boto3.client('s3')
-#     PREFIX = folder_name + '/'
-#     response = s3_client.list_objects_v2(Bucket=s3_bucket, Prefix=PREFIX)
-
-#     for object in response['Contents']:
-#         print('Deleting', object['Key'])
-#         s3_client.delete_object(Bucket=s3_bucket, Key=object['Key'])                                
-
-# @api_view(["GET"])
-# @csrf_exempt
-# # @permission_classes([IsAuthenticated])
-# def get_dealerships(request):
-#     user_id = request.user.id
-#     permissions = Permission.objects.filter(user=user_id)
-#     print([p for p in permissions])
-#     user = get_object_or_404(CustomUser, pk=user_id)
-#     # if user.has_perm("auth.add_permission"): 
-#     #     print("True")
-#     # else:
-#     #     print("False")
-#     # if user.has_perm("auth.change_permission"): 
-#     #     print("True")
-#     # else:
-#     #     print("False")
-#     dealerships = ""
-#     dealership_name = request.GET.get("name", "")
-#     print([i for i in request.GET.items()])
-#     print("##" + dealership_name + "##")
-#     if dealership_name == "":
-#         dealerships = Dealership.objects.all()
-#     else:
-#         dealerships = Dealership.objects.filter(name=dealership_name)
-    
-#     serializer = DealershipSerializer(dealerships, many=True)
-#     return JsonResponse({'dealerships': serializer.data}, safe=False, status=status.HTTP_200_OK)
-
-
-# @api_view(["GET"])
-# # @csrf_exempt
-# # @permission_classes([IsAuthenticated])
-# def get_claim_types(request):
-#     claim_types = ClaimType.objects.all()
-    
-#     serializer = ClaimTypeSerializer(claim_types, many=True)
-#     return JsonResponse({'claim_types': serializer.data}, safe=False, status=status.HTTP_200_OK) 
-
-
-# @api_view(["GET"])
-# @csrf_exempt
-# # @permission_classes([IsAuthenticated])
-# def get_submission_types(request):
-#     submission_types = SubmissionType.objects.all()
-    
-#     serializer = SubmissionTypeSerializer(submission_types, many=True)
-#     return JsonResponse({'submission_types': serializer.data}, safe=False, status=status.HTTP_200_OK) 
-
-
-# @api_view(["GET"])
-# @csrf_exempt
-# # @permission_classes([IsAuthenticated])
-# def get_service_advisors(request):
-#     service_advisor = ServiceAdvisor.objects.all()
-    
-#     serializer = ServiceAdvisorSerializer(service_advisor, many=True)
-#     return JsonResponse({'service_advisor': serializer.data}, safe=False, status=status.HTTP_200_OK) 
-
-
-# @api_view(["GET"])
-# @csrf_exempt
-# # @permission_classes([IsAuthenticated])
-# def get_technicians(request):
-#     technicians = Technician.objects.all()
-    
-#     serializer = TechnicianSerializer(technicians, many=True)
-#     return JsonResponse({'technicians': serializer.data}, safe=False, status=status.HTTP_200_OK)         
-
-
-# @api_view(["POST"])
-# @csrf_exempt
-# # @permission_classes([IsAuthenticated])
-# def add_claim(request):
-#     try:
-#         dealership = Claim.objects.create(
-#             repair_order=request.POST["repair_order"],
-#             pdf=request.POST["pdf"],
-#             dealership = Dealership.objects.filter(name=request.POST["dealership"]).first(),
-#             claim_type = ClaimType.objects.filter(name=request.POST["claim_type"]).first(),
-#             submission_type = SubmissionType.objects.filter(name=request.POST["submission_type"]).first(),
-#             service_advisor = ServiceAdvisor.objects.filter(name=request.POST["service_advisor"]).first(),
-#             technician = Technician.objects.filter(name=request.POST["technician"]).first(),
-#             upload_date = datetime.now()
-#         )
-#         serializer = ClaimSerializer(dealership)
-#         return JsonResponse({'claims': serializer.data}, safe=False, status=status.HTTP_201_CREATED)
-#     except ObjectDoesNotExist as e:
-#         return JsonResponse({'error': str(e)}, safe=False, status=status.HTTP_404_NOT_FOUND)
-#     except Exception as err:
-#         print(err)
-#         return JsonResponse({'error': 'Something terrible went wrong'}, safe=False, status=status.HTTP_500_INTERNAL_SERVER_ERROR)  
-
-
-# @api_view(["GET"])
-# @csrf_exempt
-# # @permission_classes([IsAuthenticated])
-# def get_claims(request):
-#     claims = Claim.objects.all()
-    
-#     serializer = ClaimSerializer(claims, many=True)
-#     return JsonResponse({'claims': serializer.data}, safe=False, status=status.HTTP_200_OK)           
-
-
-# @api_view(["GET"])
-# @csrf_exempt
-# # @permission_classes([IsAuthenticated])
-# def get_claim(request, claim_id):
-#     claims = Claim.objects.filter(id=claim_id)
-    
-#     serializer = ClaimSerializer(claims, many=True)
-#     return JsonResponse({'claims': serializer.data}, safe=False, status=status.HTTP_200_OK)
-
-
-# @api_view(["GET"])
-# @csrf_exempt
-# # @permission_classes([IsAuthenticated])
-# def get_claims_dealership(request, dealership_name):
-#     claims = Claim.objects.filter(dealership=dealership_name)
-    
-#     serializer = ClaimSerializer(claims, many=True)
-#     return JsonResponse({'claims': serializer.data}, safe=False, status=status.HTTP_200_OK)    
-
-
-
-                          
-
-
-# @api_view(["GET"])
-# # @csrf_exempt
-# # @permission_classes([IsAuthenticated])
-# def add_collection(request):
-#     collection_name = request.GET["collection"]
-#     field_names = request.GET.getlist("field_name[]")
-#     field_types = request.GET.getlist("field_type[]")
-#     sql = "CREATE TABLE `" + "col_" + collection_name + "` (`event_id` VARCHAR(255) NOT NULL, "
-#     for (name, type) in zip(field_names, field_types):
-#         sql += "`" + name + "` "
-#         if type == "numeric":
-#             sql += "FLOAT(11) NOT NULL, "
-#         else:
-#             sql += "VARCHAR(255) NOT NULL, "
-#     sql += "PRIMARY KEY (`event_id`) ); "
-#     print(sql)
-#     with connection.cursor() as cursor:
-#         try:
-#             cursor.execute(sql)
-#             return Response({"res": "success"})
-#         except:
-#             return Response({"res": "fail"})
-     
+            return Response(posts_serializer.errors, status=status.HTTP_400_BAD_REQUEST)      

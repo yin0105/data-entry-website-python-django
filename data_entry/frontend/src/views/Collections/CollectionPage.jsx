@@ -180,7 +180,15 @@ class CollectionPage extends Component {
 
   handleDuplicate = index => {
     let list = [...this.state.events]
-    list = list.slice(0, index + 1).concat(list.slice(index, index + 1)).concat(list.slice(index + 1))
+    let fields = []
+    this.collection.field_types.split("::").map((x, i) => {
+      fields.push({name: this.collection.field_names.split("::")[i], type: x, value: ''})
+    })
+    let newRow = {...list.slice(index, index + 1)[0]}
+    console.log("newRow = ", newRow)
+    // newRow[0]["fields"] = fields
+    newRow.fields = fields
+    list = list.slice(0, index + 1).concat(newRow).concat(list.slice(index + 1))
     this.setState({events: list})
   }
 
@@ -196,7 +204,6 @@ class CollectionPage extends Component {
   }
 
   handleSearchClick = () => {
-    console.log("handleSearchClick")
     this.setState({searchString: this.state.tmpSearchString})
     this.setState({isSearch: true})
   }
@@ -209,6 +216,7 @@ class CollectionPage extends Component {
     let list = [...this.state.events]
     list[rowIndex].fields[colIndex].value = e.target.value
     this.setState({events: list})
+    console.log("events: ", list)
   }
 
   handleSelectorValueChange = (e, rowIndex, colIndex) => {
@@ -329,7 +337,7 @@ class CollectionPage extends Component {
     if (this.collection.status == "in_progress"){
       let form_data = new FormData();
       let url = '/api/data_entry/schedule/';
-      form_data.append('id', this.collection.id);
+      form_data.append('id', this.collection.sch_id);
       form_data.append('status', 'available');
       axios.put(url, form_data, {
         headers: {
