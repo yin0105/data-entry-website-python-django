@@ -159,23 +159,50 @@ class CollectionView(APIView):
             table_name = "col_" + req["name"]
             posts_serializer = CollectionSerializer(data=request.data)
             if posts_serializer.is_valid():
-                posts_serializer.save()        
+                posts_serializer.save()                
                 field_names = str(req["field_names"]).split("::")
                 field_types = str(req["field_types"]).split("::")
-                sql = "CREATE TABLE `" + table_name + "` (`event_id` VARCHAR(255) NOT NULL, "
-                for (name, type) in zip(field_names, field_types):
-                    sql += "`" + name + "` "
-                    if type == "numeric":
-                        sql += "FLOAT(11) NOT NULL, "
-                    else:
-                        sql += "VARCHAR(255) NOT NULL, "
-                sql += "`col_dt` DATETIME NOT NULL, PRIMARY KEY (`event_id`) ); "
-                with connection.cursor() as cursor:
+                if req["sports"].find("0::") == 0:
+                    # sql
+                    reqSql = req["sports"].split("::")[1]
+                    reqSql = reqSql.lower()
+                    fromFields = ["`" + s.strip() + "`" for s in (reqSql[reqSql.find("select") + 6 : reqSql.find("from")]).split(",")]
+                    fromTable = (reqSql[reqSql.find("from") + 5:].strip()).split(" ")[0]
+                    print("fromTable = ", fromTable)
+                    sql = "CREATE TABLE `data_entry`.`" + table_name + "` ENGINE=INNODB COLLATE = utf8mb4_general_ci COMMENT = ''  SELECT " + (", ".join(fromFields)) + " FROM `data_entry`.`" + fromTable + "` WHERE 1 = 0"
+                    print("sql = ", sql)
                     try:
-                        cursor.execute(sql)
-                        return Response({"res": "success"})
+                        with connection.cursor() as cursor:
+                            cursor.execute(sql)
+                            # cursor.execute("ALTER TABLE `" + table_name + "` ADD COLUMN `auto_id` BIGINT NOT NULL AUTO_INCREMENT , ADD PRIMARY KEY (`id`); ")
+                            for (name, type) in zip(field_names, field_types):
+                                print(" con 1")
+                                sql = "`" + name + "` "
+                                if type == "numeric":
+                                    sql += "FLOAT(11) NOT NULL "
+                                else:
+                                    sql += "VARCHAR(255) NOT NULL "
+                                print(" con 2 : ", sql)
+                                cursor.execute("ALTER TABLE `data_entry`.`" + table_name + "` ADD COLUMN " + sql)
+                                print(" con 3")
+                            return Response({"res": "success"})
                     except:
                         return Response({"res": "fail"})
+                else:
+                    sql = "CREATE TABLE `" + table_name + "` (`event_id` VARCHAR(255) NOT NULL, "
+                    for (name, type) in zip(field_names, field_types):
+                        sql += "`" + name + "` "
+                        if type == "numeric":
+                            sql += "FLOAT(11) NOT NULL, "
+                        else:
+                            sql += "VARCHAR(255) NOT NULL, "
+                    sql += "`col_dt` DATETIME NOT NULL, PRIMARY KEY (`event_id`) ); "
+                    with connection.cursor() as cursor:
+                        try:
+                            cursor.execute(sql)
+                            return Response({"res": "success"})
+                        except:
+                            return Response({"res": "fail"})
             else:
                 print('error', posts_serializer.errors)
                 return Response(posts_serializer.errors, status=status.HTTP_400_BAD_REQUEST)  
