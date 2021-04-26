@@ -128,33 +128,53 @@ class CollectionView(APIView):
                 return Response({"res": res})
         elif "save_collected_data" in req:
             table_name = "col_" + req["name"]
-            event_id = req["event_id"]            
-            sql = "SELECT COUNT(*) FROM `" + table_name + "` WHERE event_id='" + event_id + "'"
-            with connection.cursor() as cursor:
-                cursor.execute(sql)
-                row = cursor.fetchone()
-                now = timezone.now().strftime("%Y-%m-%d %H:%M:%S")
-                if (row[0] > 0):
-                    sql = "UPDATE `" + table_name + "` SET "
-                    for field in req:
-                        if field != "name" and field != "event_id" and field != "save_collected_data":
-                            sql += field + "=" + req[field] + ", "
-                    sql += "col_dt='" + now + "' WHERE event_id='" + event_id + "'"
-                else:
+            if "no_api" in req:
+                 with connection.cursor() as cursor:
                     sql = "INSERT INTO `" + table_name + "` "
                     field_names = ""
                     field_values = ""
                     for field in req:
-                        if field != "name" and field != "save_collected_data":
-                            field_names += field + ", "
-                            if field == "event_id":
-                                field_values += "'" + req[field] + "', "
+                        if field != "name" and field != "save_collected_data" and field != "no_api":
+                            if field_names == "":
+                                field_names += field
                             else:
-                                field_values += req[field] + ", "
-                    sql += "(" + field_names + "col_dt) VALUES (" + field_values + "'" + now + "')"
-                print("sql = ", sql)
-                with connection.cursor() as cursor_2:
-                    return Response({"res": cursor_2.execute(sql)})
+                                field_names += ", " + field
+
+                            if field_values == "":
+                                field_values += req[field]
+                            else:
+                                field_values += ", " + req[field]
+                    sql += "(" + field_names + ") VALUES (" + field_values + ")"
+                    print("sql = ", sql)
+                    return Response({"res": cursor.execute(sql)})
+            else:
+                event_id = req["event_id"]            
+                sql = "SELECT COUNT(*) FROM `" + table_name + "` WHERE event_id='" + event_id + "'"
+                with connection.cursor() as cursor:
+                    cursor.execute(sql)
+                    row = cursor.fetchone()
+                    now = timezone.now().strftime("%Y-%m-%d %H:%M:%S")
+                    if (row[0] > 0):
+                        sql = "UPDATE `" + table_name + "` SET "
+                        for field in req:
+                            if field != "name" and field != "event_id" and field != "save_collected_data":
+                                sql += field + "=" + req[field] + ", "
+                        sql += "col_dt='" + now + "' WHERE event_id='" + event_id + "'"
+                    else:
+                        sql = "INSERT INTO `" + table_name + "` "
+                        field_names = ""
+                        field_values = ""
+                        for field in req:
+                            if field != "name" and field != "save_collected_data":
+                                field_names += field + ", "
+                                if field == "event_id":
+                                    field_values += "'" + req[field] + "', "
+                                else:
+                                    field_values += req[field] + ", "
+                        sql += "(" + field_names + "col_dt) VALUES (" + field_values + "'" + now + "')"
+                    print("sql = ", sql)
+                    with connection.cursor() as cursor_2:
+                        return Response({"res": cursor_2.execute(sql)})
         else:
             table_name = "col_" + req["name"]
             posts_serializer = CollectionSerializer(data=request.data)

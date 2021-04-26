@@ -36,6 +36,8 @@ class CollectionPage extends Component {
       searchString: '',
       tmpSearchString: '',
       freeform_data: {},
+      sqlResults: [],
+      isAPI: true,
     }
   };
 
@@ -80,68 +82,100 @@ class CollectionPage extends Component {
   getEvents = force => {
     let list = []
     this.setState({events: list})
-    const d = new Date();
-    let today = String(d.getUTCFullYear()) + "-" + String(d.getUTCMonth() + 1) + "-" + String(d.getUTCDate())
-    this.collection.sports.split("::").map((x) => {
-      let s_name = null
-      this.sports_ids.map((s) => {
-        if (s_name != null) return
-        console.log("sport_id, x = ", s.sport_id, x)
-        if (s.sport_id == x) {
-          s_name = s.sport_name
-          return
-        }
-      })
-      const url = '/api/data_entry/api_cache/?query=sports/' + x + '/events/' + today + (force? '&force=1':'')
-      
-      axios.get(url, {'headers': this.headers})
-        .then(res => {
-          const resData = JSON.parse(res.data[0].data)
-          console.log("resData = ", resData)
-          resData.events.map(e => {
+    if (this.collection.sports.indexOf("0::") == 0) {
+      // SQL
+      this.setState({isAPI: false})      
+      const sql = this.collection.sports.substr(3)
+      console.log("sql = ", sql)
+      let form_data = new FormData();
+      form_data.append('run_sql', 1);
+      form_data.append('sql', sql);
+      let url = '/api/data_entry/collection/';
+      axios.post(url, form_data, {
+          headers: {
+              'Authorization': 'token ' + this.token,
+          }
+      }).then(res => {
+          res.data.res.map(e => {
             let fields = []
             this.collection.field_types.split("::").map((x, i) => {
               fields.push({name: this.collection.field_names.split("::")[i], type: x, value: ''})
             })
-            let eventDate = e.event_date.substr(11, 5)
-            if (this.state.range_start != "" && eventDate < this.state.range_start) return
-            if (this.state.range_end != "" && eventDate > this.state.range_end) return
             let eventRow = {
               noPick: false,
-              eventId: e.event_id,
-              sportId: e.sport_id,
-              sportName: s_name,
-              home: e.teams_normalized[0].is_home == true? {
-                teamId: e.teams_normalized[0].team_id,
-                name: e.teams_normalized[0].name,
-                mascot: e.teams_normalized[0].mascot,
-                fullName: e.teams_normalized[0].name + " " + e.teams_normalized[0].mascot,
-              } : {
-                teamId: e.teams_normalized[1].team_id,
-                name: e.teams_normalized[1].name,
-                mascot: e.teams_normalized[1].mascot,
-                fullName: e.teams_normalized[1].name + " " + e.teams_normalized[1].mascot,
-              },
-              away: e.teams_normalized[0].is_away == true? {
-                teamId: e.teams_normalized[0].team_id,
-                name: e.teams_normalized[0].name,
-                mascot: e.teams_normalized[0].mascot,
-                fullName: e.teams_normalized[0].name + " " + e.teams_normalized[0].mascot,
-              } : {
-                teamId: e.teams_normalized[1].team_id,
-                name: e.teams_normalized[1].name,
-                mascot: e.teams_normalized[1].mascot,
-                fullName: e.teams_normalized[1].name + " " + e.teams_normalized[1].mascot,
-              },
-              gameTime: eventDate,
+              sqlResults: e,
               fields: fields,
             }
             list.push(eventRow)
           })
-          console.log("list = ", list)
           this.setState({events: list})
-        });
-    })
+      })
+    } else {
+      this.setState({isAPI: true})      
+      const d = new Date();
+      let today = String(d.getUTCFullYear()) + "-" + String(d.getUTCMonth() + 1) + "-" + String(d.getUTCDate())
+      this.collection.sports.split("::").map((x) => {
+        let s_name = null
+        this.sports_ids.map((s) => {
+          if (s_name != null) return
+          console.log("sport_id, x = ", s.sport_id, x)
+          if (s.sport_id == x) {
+            s_name = s.sport_name
+            return
+          }
+        })
+        const url = '/api/data_entry/api_cache/?query=sports/' + x + '/events/' + today + (force? '&force=1':'')
+        
+        axios.get(url, {'headers': this.headers})
+          .then(res => {
+            const resData = JSON.parse(res.data[0].data)
+            console.log("resData = ", resData)
+            resData.events.map(e => {
+              let fields = []
+              this.collection.field_types.split("::").map((x, i) => {
+                fields.push({name: this.collection.field_names.split("::")[i], type: x, value: ''})
+              })
+              let eventDate = e.event_date.substr(11, 5)
+              if (this.state.range_start != "" && eventDate < this.state.range_start) return
+              if (this.state.range_end != "" && eventDate > this.state.range_end) return
+              let eventRow = {
+                noPick: false,
+                eventId: e.event_id,
+                sportId: e.sport_id,
+                sportName: s_name,
+                home: e.teams_normalized[0].is_home == true? {
+                  teamId: e.teams_normalized[0].team_id,
+                  name: e.teams_normalized[0].name,
+                  mascot: e.teams_normalized[0].mascot,
+                  fullName: e.teams_normalized[0].name + " " + e.teams_normalized[0].mascot,
+                } : {
+                  teamId: e.teams_normalized[1].team_id,
+                  name: e.teams_normalized[1].name,
+                  mascot: e.teams_normalized[1].mascot,
+                  fullName: e.teams_normalized[1].name + " " + e.teams_normalized[1].mascot,
+                },
+                away: e.teams_normalized[0].is_away == true? {
+                  teamId: e.teams_normalized[0].team_id,
+                  name: e.teams_normalized[0].name,
+                  mascot: e.teams_normalized[0].mascot,
+                  fullName: e.teams_normalized[0].name + " " + e.teams_normalized[0].mascot,
+                } : {
+                  teamId: e.teams_normalized[1].team_id,
+                  name: e.teams_normalized[1].name,
+                  mascot: e.teams_normalized[1].mascot,
+                  fullName: e.teams_normalized[1].name + " " + e.teams_normalized[1].mascot,
+                },
+                gameTime: eventDate,
+                fields: fields,
+              }
+              list.push(eventRow)
+            })
+            console.log("list = ", list)
+            this.setState({events: list})
+          });
+      })
+    }
+    
   }
 
   handleDuplicate = index => {
@@ -201,11 +235,14 @@ class CollectionPage extends Component {
     console.log("handleSubmit()")
     let errMsg = ''
     let errHeader = ''
-    this.state.events.map( e => {
+    console.log("len = ", this.state.events.length)
+    this.state.events.map( (e, i) => {
+      if (!this.state.isAPI && i == 0) return
       if (errMsg != '') return
       if (e.noPick) return
       e.fields.map( field => {
         if (errMsg != '') return
+        console.log(field.name, " :: ", field.value)
         if (field.value == '') {
           errHeader = 'No Value'
           if (field.type == 'teamname') {
@@ -237,12 +274,22 @@ class CollectionPage extends Component {
     let url = '/api/data_entry/collection/';   
     let resSave = 0 
 
-    this.state.events.map( (e) => {
+    this.state.events.map( (e, i) => {
+      if (!this.state.isAPI && i == 0) {
+        resSave++
+        return
+      }
       let form_data = new FormData();
-      console.log("event = ", e)
-      form_data.append('name', this.collection.name);
-      form_data.append('event_id', e.eventId);
+      form_data.append('name', this.collection.name);      
       form_data.append('save_collected_data', 1);
+      if (this.state.isAPI) {
+        form_data.append('event_id', e.eventId);
+      } else {
+        form_data.append('no_api', 1)
+        e.sqlResults.map((x, i) => {
+          form_data.append(this.state.events[0].sqlResults[i], "'" + x + "'")
+        })
+      }
       e.fields.map( field => {
         let v = field.type == "numeric" ? field.value: "'" + field.value + "'"
         form_data.append(field.name, v)
@@ -255,12 +302,14 @@ class CollectionPage extends Component {
         console.log("res = ", res)
           this.createNotification('success', 'The collected data has been saved successfully!', '')
           resSave++
+          console.log("resSave = ", resSave, "  len = ", this.state.events.length)
           if (resSave == this.state.events.length) {
             let form_data = new FormData();
             let url = '/api/data_entry/schedule/';
             const d = new Date()
             const now = d.getUTCFullYear() + "-" + "0".concat((d.getUTCMonth() + 1)).substr(-2) + "-" + "0".concat(d.getUTCDate()).substr(-2) + " " + "0".concat(d.getUTCHours()).substr(-2) + ":" + "0".concat(d.getUTCMinutes()).substr(-2) + ":" + "0".concat(d.getUTCSeconds()).substr(-2)
-            form_data.append('id', this.collection.id);
+            console.log("id = ", this.collection.sch_id)
+            form_data.append('id', this.collection.sch_id);
             form_data.append('status', this.user.id + "::" + now);
             axios.put(url, form_data, {
               headers: {
@@ -351,17 +400,23 @@ class CollectionPage extends Component {
                             <Table responsive>
                                 <thead>
                                     <tr>
-                                        <th>No pick?</th>                        
-                                        <th>Game time</th>
-                                        <th>Home</th>
-                                        <th>Away</th>
-                                        <th>sport</th>
+                                        <th>No pick?</th> 
+                                        {
+                                          this.state.isAPI && (<><th>Game time</th>
+                                            <th>Home</th>
+                                            <th>Away</th>
+                                            <th>sport</th></>)
+                                        } 
+                                        {
+                                          !this.state.isAPI && this.state.events.length > 0 && this.state.events[0].sqlResults.map(x => {return (<th>{x}</th>)})
+                                        }                      
+                                        
                                         {this.state.field_names.map((x) => {return (<th>{x}</th>)})}
                                         <th>Action</th>                        
                                     </tr>
                                 </thead>
                                 <tbody>
-                                  { this.state.events.map((e, i) => {
+                                  { this.state.isAPI && this.state.events.map((e, i) => {
                                     let found = false
                                     const searchString = this.state.searchString.toLowerCase()
                                     if (this.state.isSearch && searchString != '') {
@@ -391,6 +446,53 @@ class CollectionPage extends Component {
                                         <td><FormText>{e.sportName}</FormText></td>
                                         {e.fields.map((x, j) => {
                                           if (x.type == 'teamname') {
+                                            return (
+                                              <td style={{ minWidth: 150 }}>
+                                                <Select options={[{value: e.home.fullName, label: e.home.fullName}, {value: e.away.fullName, label: e.away.fullName}]} onChange={e => this.handleSelectorValueChange(e, i, j)}/>
+                                              </td>)
+                                          } else if (x.type == 'freeform') {
+                                            return (
+                                              <td>
+                                                <input list={x.name} onChange={e => this.handleListValueChange(e, i, j)} />
+                                                
+                                              </td>)
+                                          } else {
+                                            return <td><FormControl type="text" placeholder={x.type} onChange={e => this.handleFieldValueChange(e, i, j)}/></td>
+                                          }
+                                        })}
+                                        <td><Button variant="info" className="btn-fill" onClick={() => this.handleDuplicate(i)}>Duplicate</Button></td>
+                                      </tr>
+                                    )
+                                  })}
+
+                                  { !this.state.isAPI && this.state.events.length > 0 && this.state.events.map((e, i) => {
+                                    if (i ==0 ) return
+                                    {/* let found = false
+                                    const searchString = this.state.searchString.toLowerCase()
+                                    if (this.state.isSearch && searchString != '') {
+                                      if (e.gameTime.toLowerCase().includes(searchString)) {
+                                        found = true
+                                      } else if (e.home.fullName.toLowerCase().includes(searchString)) {
+                                        found = true
+                                      } else if (e.away.fullName.toLowerCase().includes(searchString)) {
+                                        found = true
+                                      } else if (e.sportName.toLowerCase().includes(searchString)) {
+                                        found = true
+                                      } else {
+                                        e.fields.map((x) => {
+                                          if (x.value.toLowerCase().includes(searchString)) {
+                                            found = true
+                                          }
+                                        })
+                                      }
+                                      if (!found) return
+                                    } */}
+                                    return (
+                                      <tr>
+                                        <td><FormCheck type="checkbox" onClick={e => this.handleNoPickClick(e, i)}/></td>
+                                        {e.sqlResults.map(x => {return (<td><FormText>{x}</FormText></td>)})}
+                                        {e.fields.map((x, j) => {
+                                          if (x.type == 'teamname' && this.state.isAPI) {
                                             return (
                                               <td style={{ minWidth: 150 }}>
                                                 <Select options={[{value: e.home.fullName, label: e.home.fullName}, {value: e.away.fullName, label: e.away.fullName}]} onChange={e => this.handleSelectorValueChange(e, i, j)}/>

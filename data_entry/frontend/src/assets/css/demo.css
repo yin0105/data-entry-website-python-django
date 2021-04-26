@@ -193,3 +193,11 @@ input[list] {
 .sql th, .sql td, table.sql {
     border: solid 1px;
 }
+
+input[list] {
+    width: 100% !important;
+}
+
+.table {
+    table-layout: fixed !important;
+}

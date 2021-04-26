@@ -117,6 +117,7 @@ class CollectionStatus extends Component {
     let form_data = new FormData();
     let url = '/api/data_entry/schedule/';
     let status = ''
+    let sch_id = -1
     this.state.schedules.map((x) => {
       console.log("x = ", x)
       if (ok) return
@@ -129,9 +130,11 @@ class CollectionStatus extends Component {
         if (x.status == "available") {
           form_data.append('status', 'in_progress');
           status = 'in_progress'
+          sch_id = x.id
         } else {
           form_data.append('status', x.status)
           status = x.status
+          sch_id = x.id
         }
         console.log("form.status = ", status)
         ok = true
@@ -147,7 +150,7 @@ class CollectionStatus extends Component {
         console.log("res = ", res)
         await axios.get('/api/data_entry/collection/?name=' + xx.collection_name, {headers: this.headers})
         .then(res => {
-          let collectionToRedirect = { ...res.data[0], time_ranges: xx.time_ranges, status: status }
+          let collectionToRedirect = { ...res.data[0], time_ranges: xx.time_ranges, status: status, sch_id: sch_id }
           saveToLocalStorage("collection", collectionToRedirect)
           this.setState({redirect: "/frontend/user/collection_page"})
         });
