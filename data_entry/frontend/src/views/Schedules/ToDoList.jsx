@@ -70,13 +70,14 @@ class CollectionStatus extends Component {
             start_timer = parseInt(hour_min[0], 10) * 3600 + (parseInt(hour_min[1], 10) - 2) * 60
           }
 
-          const due = time_range.split("/")[1]
-          let due_timer = 86400
-          if (due != "") {
-            const hour_min = due.split(":")
-            due_timer = parseInt(hour_min[0], 10) * 3600 + parseInt(hour_min[1], 10) * 60
-          }
-          if (timer >= start_timer && timer <= due_timer) {
+          // const due = time_range.split("/")[1]
+          // let due_timer = 86400
+          // if (due != "") {
+          //   const hour_min = due.split(":")
+          //   due_timer = parseInt(hour_min[0], 10) * 3600 + parseInt(hour_min[1], 10) * 60
+          // }
+          // if (timer >= start_timer && timer <= due_timer) {
+          if (timer >= start_timer) {
             isDisplay = true
             selectedTimeRange = time_range
             return
