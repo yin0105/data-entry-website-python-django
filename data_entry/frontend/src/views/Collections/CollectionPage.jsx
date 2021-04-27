@@ -21,6 +21,7 @@ import {NotificationContainer, NotificationManager} from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
 import 'react-notifications/dist/react-notifications'
 import {Redirect} from 'react-router-dom';
+import { FormFeedback } from "reactstrap";
 
 class CollectionPage extends Component {
   constructor(props) {
@@ -266,51 +267,81 @@ class CollectionPage extends Component {
     let url = '/api/data_entry/collection/';   
     let resSave = 0 
 
-    this.state.events.map( (e, i) => {
-      if (!this.state.isAPI && i == 0) {
-        resSave++
-        return
-      }
+    if (this.state.events.length == 0) {
       let form_data = new FormData();
       form_data.append('name', this.collection.name);      
       form_data.append('save_collected_data', 1);
-      if (this.state.isAPI) {
-        form_data.append('event_id', e.eventId);
-      } else {
-        form_data.append('no_api', 1)
-        e.sqlResults.map((x, i) => {
-          form_data.append(this.state.events[0].sqlResults[i], "'" + x + "'")
-        })
-      }
-      e.fields.map( field => {
-        let v = field.type == "numeric" ? field.value: "'" + field.value + "'"
-        form_data.append(field.name, v)
-      })
+      form_data.append('no_data', 1)
+      
       axios.post(url, form_data, {
         headers: {
             'Authorization': 'token ' + this.token,
         }
       }).then(res => {
-          this.createNotification('success', 'The collected data has been saved successfully!', '')
-          resSave++
-          if (resSave == this.state.events.length) {
-            let form_data = new FormData();
-            let url = '/api/data_entry/schedule/';
-            const d = new Date()
-            const now = d.getUTCFullYear() + "-" + "0".concat((d.getUTCMonth() + 1)).substr(-2) + "-" + "0".concat(d.getUTCDate()).substr(-2) + " " + "0".concat(d.getUTCHours()).substr(-2) + ":" + "0".concat(d.getUTCMinutes()).substr(-2) + ":" + "0".concat(d.getUTCSeconds()).substr(-2)
-            form_data.append('id', this.collection.sch_id);
-            form_data.append('status', this.user.id + "::" + now);
-            axios.put(url, form_data, {
-              headers: {
-                  'Authorization': 'token ' + this.token,
-              }
-            }).then(async (res) => {
-              this.setState({redirect: "/frontend/user/dashboard"})
-            }).catch(err => {console.log("Error"); console.log(err)})
+        this.createNotification('success', 'The empty data has been saved successfully!', '')
+          
+        let form_data = new FormData();
+        let url = '/api/data_entry/schedule/';
+        const d = new Date()
+        const now = d.getUTCFullYear() + "-" + "0".concat((d.getUTCMonth() + 1)).substr(-2) + "-" + "0".concat(d.getUTCDate()).substr(-2) + " " + "0".concat(d.getUTCHours()).substr(-2) + ":" + "0".concat(d.getUTCMinutes()).substr(-2) + ":" + "0".concat(d.getUTCSeconds()).substr(-2)
+        form_data.append('id', this.collection.sch_id);
+        form_data.append('status', this.user.id + "::" + now);
+        axios.put(url, form_data, {
+          headers: {
+              'Authorization': 'token ' + this.token,
           }
-          return
+        }).then(async (res) => {
+          this.setState({redirect: "/frontend/user/dashboard"})
+        }).catch(err => {console.log("Error"); console.log(err)})
+        return
       }).catch(err => {console.log("Error"); console.log(err)})
-    })
+    } else {
+      this.state.events.map( (e, i) => {
+        if (!this.state.isAPI && i == 0) {
+          resSave++
+          return
+        }
+        let form_data = new FormData();
+        form_data.append('name', this.collection.name);      
+        form_data.append('save_collected_data', 1);
+        if (this.state.isAPI) {
+          form_data.append('event_id', e.eventId);
+        } else {
+          form_data.append('no_api', 1)
+          e.sqlResults.map((x, i) => {
+            form_data.append(this.state.events[0].sqlResults[i], "'" + x + "'")
+          })
+        }
+        e.fields.map( field => {
+          let v = field.type == "numeric" ? field.value: "'" + field.value + "'"
+          form_data.append(field.name, v)
+        })
+        axios.post(url, form_data, {
+          headers: {
+              'Authorization': 'token ' + this.token,
+          }
+        }).then(res => {
+            this.createNotification('success', 'The collected data has been saved successfully!', '')
+            resSave++
+            if (resSave == this.state.events.length) {
+              let form_data = new FormData();
+              let url = '/api/data_entry/schedule/';
+              const d = new Date()
+              const now = d.getUTCFullYear() + "-" + "0".concat((d.getUTCMonth() + 1)).substr(-2) + "-" + "0".concat(d.getUTCDate()).substr(-2) + " " + "0".concat(d.getUTCHours()).substr(-2) + ":" + "0".concat(d.getUTCMinutes()).substr(-2) + ":" + "0".concat(d.getUTCSeconds()).substr(-2)
+              form_data.append('id', this.collection.sch_id);
+              form_data.append('status', this.user.id + "::" + now);
+              axios.put(url, form_data, {
+                headers: {
+                    'Authorization': 'token ' + this.token,
+                }
+              }).then(async (res) => {
+                this.setState({redirect: "/frontend/user/dashboard"})
+              }).catch(err => {console.log("Error"); console.log(err)})
+            }
+            return
+        }).catch(err => {console.log("Error"); console.log(err)})
+      })
+    }
   }
 
   handleCancel = () => {
@@ -517,6 +548,7 @@ class CollectionPage extends Component {
                             </Row>
                         }
                     />
+                  {this.state.events.length == 0 && <FormFeedback className="text-danger">No games were found.</FormFeedback>}
                 </Col>
             </Row>
             <NotificationContainer/>
