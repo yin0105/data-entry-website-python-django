@@ -129,7 +129,11 @@ class CollectionView(APIView):
                 return Response({"res": res})
         elif "save_collected_data" in req:
             table_name = "col_" + req["name"]
-            if "no_api" in req:
+            if "no_data" in req:
+                 with connection.cursor() as cursor:
+                    sql = "INSERT INTO `" + table_name + "` (`col_dt`) VALUES ('" + now + "')"
+                    return Response({"res": cursor.execute(sql)})
+            elif "no_api" in req:
                  with connection.cursor() as cursor:
                     sql = "INSERT INTO `" + table_name + "` "
                     field_names = ""
@@ -234,11 +238,18 @@ class ScheduleView(APIView):
         ordinary_dict["status"] = instance.status
 
         req = request.data
+        print("req = ", req)
         if "collection" in req: ordinary_dict["collection"] = req["collection"]
         if "active" in req: ordinary_dict["active"] = req["active"]
         if "weekdays" in req: ordinary_dict["weekdays"] = req["weekdays"]
         if "time_ranges" in req: ordinary_dict["time_ranges"] = req["time_ranges"]
-        if "status" in req: ordinary_dict["status"] = req["status"]
+        if "status" in req: 
+            if "index" in req:
+                temp_statuses = ordinary_dict["status"].split("/")
+                temp_statuses[int(req["index"])] = req["status"]
+                ordinary_dict["status"] = "/".join(temp_statuses)
+            else:
+                ordinary_dict["status"] = req["status"]
 
         query_dict = QueryDict('', mutable=True)
         query_dict.update(ordinary_dict)

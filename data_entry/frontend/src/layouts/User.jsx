@@ -1,7 +1,7 @@
-
 import React, { Component } from "react";
 import { Switch, Route } from "react-router-dom";
 import routes from "routes.js";
+import { Link, Redirect } from 'react-router-dom';
 
 
 class UserPages extends Component {
@@ -36,6 +36,9 @@ class UserPages extends Component {
     return (
       <div>
         <div className="wrapper wrapper-full-page">
+            <div className="header">
+              <Link to="/frontend/auth/logout-page" style={{position: 'absolute', top: '20px', right: '100px' }}>Log Out</Link>
+            </div>
             <div className="content">
               <Switch>{this.getRoutes(routes)}</Switch>
             </div>

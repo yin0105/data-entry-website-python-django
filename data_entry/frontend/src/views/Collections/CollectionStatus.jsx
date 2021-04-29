@@ -58,13 +58,14 @@ class CollectionStatus extends Component {
     const timer = d.getUTCHours() * 3600 + d.getUTCMinutes() * 60 + d.getUTCSeconds()
     let filteredSchedules = []
     this.state.schedules.map((schedule) => {
-      let isDisplay = false
+      // let isDisplay = false
       let selectedTimeRange = ""
       let status = schedule.status
       let completedTime = "-"
-      if (status == 'available') {
-        schedule.active && schedule.weekdays[weekday - 1] == "1" && schedule.time_ranges.split("::").map((time_range) => {
-          if (isDisplay) return
+      
+      schedule.active && schedule.weekdays[weekday - 1] == "1" && schedule.time_ranges.split("::").map((time_range, sub_sch_index) => {
+        let sub_status = schedule.status.split("/")[sub_sch_index]
+        if (sub_status == 'available') {
           const start_time = time_range.split("/")[0]
           let start_timer = 0
           if (start_time != "") {
@@ -72,30 +73,28 @@ class CollectionStatus extends Component {
             start_timer = parseInt(hour_min[0], 10) * 3600 + (parseInt(hour_min[1], 10) - 2) * 60
           }
 
-          const due = time_range.split("/")[1]
-          let due_timer = 86400
-          if (due != "") {
-            const hour_min = due.split(":")
-            due_timer = parseInt(hour_min[0], 10) * 3600 + parseInt(hour_min[1], 10) * 60
-          }
-          if (timer >= start_timer && timer <= due_timer) {
-            isDisplay = true
+          // const due = time_range.split("/")[1]
+          // let due_timer = 86400
+          // if (due != "") {
+          //   const hour_min = due.split(":")
+          //   due_timer = parseInt(hour_min[0], 10) * 3600 + parseInt(hour_min[1], 10) * 60
+          // }
+          if (timer >= start_timer) { // && timer <= due_timer
             selectedTimeRange = time_range
-            return
+          } else {
+            sub_status = "upcoming"
           }
-        })
-        if (!isDisplay) {
-          status = "upcoming"
+        } else if (sub_status != "in_progress") {
+          completedTime = sub_status.split("::")[1]
+          sub_status = "completed"
         }
-      } else if (status != "in_progress") {
-        completedTime = status.split("::")[1]
-        status = "completed"
-      }
 
-      let tmpSchedule = {...schedule}
-      tmpSchedule.status = status
-      tmpSchedule.completedTime = completedTime
-      filteredSchedules.push(tmpSchedule)
+        let tmpSchedule = {...schedule}
+        tmpSchedule.status = sub_status
+        tmpSchedule.time_ranges = time_range
+        tmpSchedule.completedTime = completedTime
+        filteredSchedules.push(tmpSchedule)
+      })
     })
     this.setState({filteredSchedules})
   }
@@ -116,45 +115,6 @@ class CollectionStatus extends Component {
         this.createNotification('success', 'Schedule has been updated successfully!', '')
         return
     }).catch(err => {console.log("Error"); console.log(err)})
-  }
-
-  gotoCollect = async(xx) => {
-    console.log("gotoCollect()")
-    let ok = false
-    let form_data = new FormData();
-    let url = '/api/data_entry/schedule/';
-    this.state.schedules.map((x) => {
-      if (ok) return
-      if (x.id == xx.id) {
-        form_data.append('id', x.id);
-        // form_data.append('collection', x.collection);
-        // form_data.append('active', x.active);
-        // form_data.append('weekdays', x.weekdays);
-        // form_data.append('time_ranges', x.time_ranges);
-        if (x.status == "available") {
-          form_data.append('status', 'in_progress');
-        } else {
-          form_data.append('status', x.status)
-        }
-        ok = true
-        return
-      }
-    })
-    if (ok) {
-      await axios.put(url, form_data, {
-        headers: {
-            'Authorization': 'token ' + this.token,
-        }
-      }).then(async (res) => {
-        console.log("res = ", res)
-        await axios.get('/api/data_entry/collection/?name=' + xx.collection_name, {headers: this.headers})
-        .then(res => {
-          let collectionToRedirect = { ...res.data[0], time_ranges: xx.time_ranges, status: form_data['status'] }
-          saveToLocalStorage("collection", collectionToRedirect)
-          this.setState({redirect: "/frontend/user/collection_page"})
-        });
-      }).catch(err => {console.log("Error"); console.log(err)})
-    }
   }
 
   render() {

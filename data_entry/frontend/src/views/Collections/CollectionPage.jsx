@@ -21,6 +21,7 @@ import {NotificationContainer, NotificationManager} from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
 import 'react-notifications/dist/react-notifications'
 import {Redirect} from 'react-router-dom';
+import { FormFeedback } from "reactstrap";
 
 class CollectionPage extends Component {
   constructor(props) {
@@ -86,7 +87,6 @@ class CollectionPage extends Component {
       // SQL
       this.setState({isAPI: false})      
       const sql = this.collection.sports.substr(3)
-      console.log("sql = ", sql)
       let form_data = new FormData();
       form_data.append('run_sql', 1);
       form_data.append('sql', sql);
@@ -118,7 +118,6 @@ class CollectionPage extends Component {
         let s_name = null
         this.sports_ids.map((s) => {
           if (s_name != null) return
-          console.log("sport_id, x = ", s.sport_id, x)
           if (s.sport_id == x) {
             s_name = s.sport_name
             return
@@ -129,7 +128,6 @@ class CollectionPage extends Component {
         axios.get(url, {'headers': this.headers})
           .then(res => {
             const resData = JSON.parse(res.data[0].data)
-            console.log("resData = ", resData)
             resData.events.map(e => {
               let fields = []
               this.collection.field_types.split("::").map((x, i) => {
@@ -170,12 +168,10 @@ class CollectionPage extends Component {
               }
               list.push(eventRow)
             })
-            console.log("list = ", list)
             this.setState({events: list})
           });
       })
     }
-    
   }
 
   handleDuplicate = index => {
@@ -185,7 +181,6 @@ class CollectionPage extends Component {
       fields.push({name: this.collection.field_names.split("::")[i], type: x, value: ''})
     })
     let newRow = {...list.slice(index, index + 1)[0]}
-    console.log("newRow = ", newRow)
     // newRow[0]["fields"] = fields
     newRow.fields = fields
     list = list.slice(0, index + 1).concat(newRow).concat(list.slice(index + 1))
@@ -197,9 +192,6 @@ class CollectionPage extends Component {
   }
 
   handleSearchStringKeyPress = e => {
-    console.log("e = ", e)
-    console.log("e.target = ", e.target)
-    console.log("handleSearchStringKeyPress :: ", e.keyCode)
     if(e.keyCode == 13) this.handleSearchClick()
   }
 
@@ -216,18 +208,15 @@ class CollectionPage extends Component {
     let list = [...this.state.events]
     list[rowIndex].fields[colIndex].value = e.target.value
     this.setState({events: list})
-    console.log("events: ", list)
   }
 
   handleSelectorValueChange = (e, rowIndex, colIndex) => {
-    console.log("e.value = ", e.value)
     let list = [...this.state.events]
     list[rowIndex].fields[colIndex].value = e.value
     this.setState({events: list})
   }
 
   handleListValueChange = (e, rowIndex, colIndex) => {
-    console.log("e.target.value = ", e.target.value)
     let list = [...this.state.events]
     list[rowIndex].fields[colIndex].value = e.target.value
     this.setState({events: list})
@@ -240,17 +229,14 @@ class CollectionPage extends Component {
   }
 
   handleSubmit = () => {
-    console.log("handleSubmit()")
     let errMsg = ''
     let errHeader = ''
-    console.log("len = ", this.state.events.length)
     this.state.events.map( (e, i) => {
       if (!this.state.isAPI && i == 0) return
       if (errMsg != '') return
       if (e.noPick) return
       e.fields.map( field => {
         if (errMsg != '') return
-        console.log(field.name, " :: ", field.value)
         if (field.value == '') {
           errHeader = 'No Value'
           if (field.type == 'teamname') {
@@ -277,68 +263,87 @@ class CollectionPage extends Component {
       this.createNotification('error', errHeader, errMsg)
       return
     }
-    console.log("Ok")
     
     let url = '/api/data_entry/collection/';   
     let resSave = 0 
+    const d = new Date()
+    const now = d.getUTCFullYear() + "-" + "0".concat((d.getUTCMonth() + 1)).substr(-2) + "-" + "0".concat(d.getUTCDate()).substr(-2) + " " + "0".concat(d.getUTCHours()).substr(-2) + ":" + "0".concat(d.getUTCMinutes()).substr(-2) + ":" + "0".concat(d.getUTCSeconds()).substr(-2)
+    
+    let form_data = new FormData();
+    form_data.append('name', this.collection.name);      
+    form_data.append('save_collected_data', 1);
 
-    this.state.events.map( (e, i) => {
-      if (!this.state.isAPI && i == 0) {
-        resSave++
-        return
-      }
-      let form_data = new FormData();
-      form_data.append('name', this.collection.name);      
-      form_data.append('save_collected_data', 1);
-      if (this.state.isAPI) {
-        form_data.append('event_id', e.eventId);
-      } else {
-        form_data.append('no_api', 1)
-        e.sqlResults.map((x, i) => {
-          form_data.append(this.state.events[0].sqlResults[i], "'" + x + "'")
-        })
-      }
-      e.fields.map( field => {
-        let v = field.type == "numeric" ? field.value: "'" + field.value + "'"
-        form_data.append(field.name, v)
-      })
+    let form_data_2 = new FormData();
+    form_data_2.append('id', this.collection.sch_id);
+    form_data_2.append('status', this.user.id + "::" + now);
+    form_data_2.append('index', this.collection.index);
+    
+    if (this.state.events.length == 0) {
+      form_data.append('no_data', 1)
       axios.post(url, form_data, {
         headers: {
             'Authorization': 'token ' + this.token,
         }
       }).then(res => {
-        console.log("res = ", res)
-          this.createNotification('success', 'The collected data has been saved successfully!', '')
-          resSave++
-          console.log("resSave = ", resSave, "  len = ", this.state.events.length)
-          if (resSave == this.state.events.length) {
-            let form_data = new FormData();
-            let url = '/api/data_entry/schedule/';
-            const d = new Date()
-            const now = d.getUTCFullYear() + "-" + "0".concat((d.getUTCMonth() + 1)).substr(-2) + "-" + "0".concat(d.getUTCDate()).substr(-2) + " " + "0".concat(d.getUTCHours()).substr(-2) + ":" + "0".concat(d.getUTCMinutes()).substr(-2) + ":" + "0".concat(d.getUTCSeconds()).substr(-2)
-            console.log("id = ", this.collection.sch_id)
-            form_data.append('id', this.collection.sch_id);
-            form_data.append('status', this.user.id + "::" + now);
-            axios.put(url, form_data, {
-              headers: {
-                  'Authorization': 'token ' + this.token,
-              }
-            }).then(async (res) => {
-              this.setState({redirect: "/frontend/user/dashboard"})
-            }).catch(err => {console.log("Error"); console.log(err)})
+        this.createNotification('success', 'The empty data has been saved successfully!', '')
+        let url = '/api/data_entry/schedule/';
+        axios.put(url, form_data_2, {
+          headers: {
+              'Authorization': 'token ' + this.token,
           }
-          return
+        }).then(async (res) => {
+          this.setState({redirect: "/frontend/user/dashboard"})
+        }).catch(err => {console.log("Error"); console.log(err)})
+        return
       }).catch(err => {console.log("Error"); console.log(err)})
-    })
+    } else {
+      this.state.events.map( (e, i) => {
+        if (!this.state.isAPI && i == 0) {
+          resSave++
+          return
+        }
+        if (this.state.isAPI) {
+          form_data.append('event_id', e.eventId);
+        } else {
+          form_data.append('no_api', 1)
+          e.sqlResults.map((x, i) => {
+            form_data.append(this.state.events[0].sqlResults[i], "'" + x + "'")
+          })
+        }
+        e.fields.map( field => {
+          let v = field.type == "numeric" ? field.value: "'" + field.value + "'"
+          form_data.append(field.name, v)
+        })
+        axios.post(url, form_data, {
+          headers: {
+              'Authorization': 'token ' + this.token,
+          }
+        }).then(res => {
+            this.createNotification('success', 'The collected data has been saved successfully!', '')
+            resSave++
+            if (resSave == this.state.events.length) {
+              let url = '/api/data_entry/schedule/';
+              axios.put(url, form_data_2, {
+                headers: {
+                    'Authorization': 'token ' + this.token,
+                }
+              }).then(async (res) => {
+                this.setState({redirect: "/frontend/user/dashboard"})
+              }).catch(err => {console.log("Error"); console.log(err)})
+            }
+            return
+        }).catch(err => {console.log("Error"); console.log(err)})
+      })
+    }
   }
 
   handleCancel = () => {
-    console.log("status = ", this.collection.status)
     if (this.collection.status == "in_progress"){
       let form_data = new FormData();
       let url = '/api/data_entry/schedule/';
       form_data.append('id', this.collection.sch_id);
       form_data.append('status', 'available');
+      form_data.append('index', this.collection.index);
       axios.put(url, form_data, {
         headers: {
             'Authorization': 'token ' + this.token,
@@ -349,6 +354,16 @@ class CollectionPage extends Component {
     } else {
       this.setState({redirect: "/frontend/user/dashboard"})
     }
+  }
+
+  convertToLocalTime = t => {
+    if (t == "") return ""
+    let h = parseInt(t.split(":")[0])
+    let m = parseInt(t.split(":")[1])
+    const totalMin = h * 60 + m - new Date().getTimezoneOffset()
+    h = parseInt(totalMin / 60) % 24
+    m = totalMin % 60
+    return ("0".concat(h.toString())).substr(-2) + ":" + ("0".concat(m.toString())).substr(-2)
   }
 
   createNotification = (type, title, content) => {
@@ -384,12 +399,11 @@ class CollectionPage extends Component {
                     })}
                   </datalist>
                 )
-              }
-            })}
+              }})}
             <Row className="align-items-baseline">
                 <Col md={{ span: 4, offset: 1 }}>
                     <FormLabel>Collecting <b className="mx-4">{this.collection.name}</b></FormLabel>
-                    <FormLabel>{this.state.range_start} - {this.state.range_end}</FormLabel>
+                    <FormLabel>{this.convertToLocalTime(this.state.range_start)} - {this.convertToLocalTime(this.state.range_end)}</FormLabel>
                 </Col>
                 <Col md={{ span: 2 }}>
                     <FormControl type="text" onChange={e => this.handleSearchStringChange(e)} onKeyPress={this.handleSearchStringKeyPress}/>
@@ -448,7 +462,7 @@ class CollectionPage extends Component {
                                     return (
                                       <tr>
                                         <td><FormCheck type="checkbox" onClick={e => this.handleNoPickClick(e, i)}/></td>
-                                        <td><FormText>{e.gameTime}</FormText></td>
+                                        <td><FormText>{this.convertToLocalTime(e.gameTime)}</FormText></td>
                                         <td><FormText>{e.home.fullName}</FormText></td>
                                         <td><FormText>{e.away.fullName}</FormText></td>
                                         <td><FormText>{e.sportName}</FormText></td>
@@ -456,16 +470,21 @@ class CollectionPage extends Component {
                                           if (x.type == 'teamname') {
                                             return (
                                               <td style={{ minWidth: 150 }}>
-                                                <Select options={[{value: e.home.fullName, label: e.home.fullName}, {value: e.away.fullName, label: e.away.fullName}]} onChange={e => this.handleSelectorValueChange(e, i, j)}/>
+                                                <datalist id={x.name + "_" + i}>
+                                                  <option value={e.home.fullName}/>
+                                                  <option value={e.away.fullName}/>
+                                                </datalist>
+                                                <input list={x.name + "_" + i} value={x.value} onChange={e => this.handleListValueChange(e, i, j)}/>
+                                                {/* <Select options={[{value: e.home.fullName, label: e.home.fullName}, {value: e.away.fullName, label: e.away.fullName}]} onChange={e => this.handleSelectorValueChange(e, i, j)}/> */}
                                               </td>)
                                           } else if (x.type == 'freeform') {
                                             return (
                                               <td>
-                                                <input list={x.name} onChange={e => this.handleListValueChange(e, i, j)} />
+                                                <input list={x.name} value={x.value} onChange={e => this.handleListValueChange(e, i, j)} />
                                                 
                                               </td>)
                                           } else {
-                                            return <td><FormControl type="text" placeholder={x.type} onChange={e => this.handleFieldValueChange(e, i, j)}/></td>
+                                            return <td><FormControl type="text" placeholder={x.type} value={x.value} onChange={e => this.handleFieldValueChange(e, i, j)}/></td>
                                           }
                                         })}
                                         <td><Button variant="info" className="btn-fill" onClick={() => this.handleDuplicate(i)}>Duplicate</Button></td>
@@ -533,6 +552,7 @@ class CollectionPage extends Component {
                             </Row>
                         }
                     />
+                  {this.state.events.length == 0 && <FormFeedback className="text-danger">No games were found.</FormFeedback>}
                 </Col>
             </Row>
             <NotificationContainer/>

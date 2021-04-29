@@ -19,6 +19,7 @@ import {NotificationContainer, NotificationManager} from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
 import 'react-notifications/dist/react-notifications'
 import {Redirect} from 'react-router-dom';
+import { xt256 } from "react-syntax-highlighter/dist/styles/hljs";
 
 
 class CollectionStatus extends Component {
@@ -45,7 +46,6 @@ class CollectionStatus extends Component {
     axios.get('/api/data_entry/schedule/', {'headers': this.headers})
       .then(res => {
         this.setState({ schedules: res.data });
-        console.log("this.state.schedule = ", this.state.schedules)
         this.filterToDoList()
         var intervalId = setInterval(this.filterToDoList, 10000);
       });
@@ -58,11 +58,9 @@ class CollectionStatus extends Component {
     const timer = d.getUTCHours() * 3600 + d.getUTCMinutes() * 60 + d.getUTCSeconds()
     let filteredSchedules = []
     this.state.schedules.map((schedule) => {
-      let isDisplay = false
-      let selectedTimeRange = ""
-      if (schedule.status == 'available' || schedule.status.indexOf(this.user.id + "::") == 0) {
-        schedule.active && schedule.weekdays[weekday - 1] == "1" && schedule.time_ranges.split("::").map((time_range) => {
-          if (isDisplay) return
+      schedule.active && schedule.weekdays[weekday - 1] == "1" && schedule.time_ranges.split("::").map((time_range, sub_sch_index) => {
+        const sub_status = schedule.status.split("/")[sub_sch_index]
+        if (sub_status == 'available' || sub_status.indexOf(this.user.id + "::") == 0) {
           const start_time = time_range.split("/")[0]
           let start_timer = 0
           if (start_time != "") {
@@ -70,25 +68,28 @@ class CollectionStatus extends Component {
             start_timer = parseInt(hour_min[0], 10) * 3600 + (parseInt(hour_min[1], 10) - 2) * 60
           }
 
-          const due = time_range.split("/")[1]
-          let due_timer = 86400
-          if (due != "") {
-            const hour_min = due.split(":")
-            due_timer = parseInt(hour_min[0], 10) * 3600 + parseInt(hour_min[1], 10) * 60
+          // const due = time_range.split("/")[1]
+          // let due_timer = 86400
+          // if (due != "") {
+          //   const hour_min = due.split(":")
+          //   due_timer = parseInt(hour_min[0], 10) * 3600 + parseInt(hour_min[1], 10) * 60
+          // }
+          // if (timer >= start_timer && timer <= due_timer) {
+          if (timer >= start_timer) {
+            let tmpSchedule = {...schedule}
+            tmpSchedule.time_ranges = time_range
+            tmpSchedule.status = sub_status
+            tmpSchedule.index = sub_sch_index
+            filteredSchedules.push(tmpSchedule)
           }
-          if (timer >= start_timer && timer <= due_timer) {
-            isDisplay = true
-            selectedTimeRange = time_range
-            return
-          }
-        })
-      }
+        }
+      })
 
-      if (isDisplay) {
-        let tmpSchedule = {...schedule}
-        tmpSchedule.time_ranges = selectedTimeRange
-        filteredSchedules.push(tmpSchedule)
-      }
+      // if (isDisplay) {
+      //   let tmpSchedule = {...schedule}
+      //   tmpSchedule.time_ranges = selectedTimeRange
+      //   filteredSchedules.push(tmpSchedule)
+      // }
     })
     this.setState({filteredSchedules})
   }
@@ -111,51 +112,41 @@ class CollectionStatus extends Component {
     }).catch(err => {console.log("Error"); console.log(err)})
   }
 
-  gotoCollect = async(xx) => {
-    console.log("gotoCollect()")
-    let ok = false
+  gotoCollect = async(x) => {
     let form_data = new FormData();
     let url = '/api/data_entry/schedule/';
     let status = ''
-    let sch_id = -1
-    this.state.schedules.map((x) => {
-      console.log("x = ", x)
-      if (ok) return
-      if (x.id == xx.id) {
-        form_data.append('id', x.id);
-        // form_data.append('collection', x.collection);
-        // form_data.append('active', x.active);
-        // form_data.append('weekdays', x.weekdays);
-        // form_data.append('time_ranges', x.time_ranges);
-        if (x.status == "available") {
-          form_data.append('status', 'in_progress');
-          status = 'in_progress'
-          sch_id = x.id
-        } else {
-          form_data.append('status', x.status)
-          status = x.status
-          sch_id = x.id
-        }
-        console.log("form.status = ", status)
-        ok = true
-        return
-      }
-    })
-    if (ok) {
-      await axios.put(url, form_data, {
-        headers: {
-            'Authorization': 'token ' + this.token,
-        }
-      }).then(async (res) => {
-        console.log("res = ", res)
-        await axios.get('/api/data_entry/collection/?name=' + xx.collection_name, {headers: this.headers})
-        .then(res => {
-          let collectionToRedirect = { ...res.data[0], time_ranges: xx.time_ranges, status: status, sch_id: sch_id }
-          saveToLocalStorage("collection", collectionToRedirect)
-          this.setState({redirect: "/frontend/user/collection_page"})
-        });
-      }).catch(err => {console.log("Error"); console.log(err)})
+    form_data.append('id', x.id);
+    form_data.append('index', x.index);
+    if (x.status == "available") {
+      form_data.append('status', 'in_progress');
+      status = 'in_progress'
+    } else {
+      form_data.append('status', x.status)
+      status = x.status
     }
+    await axios.put(url, form_data, {
+      headers: {
+          'Authorization': 'token ' + this.token,
+      }
+    }).then(async (res) => {
+      await axios.get('/api/data_entry/collection/?name=' + x.collection_name, {headers: this.headers})
+      .then(res => {
+        let collectionToRedirect = { ...res.data[0], time_ranges: x.time_ranges, status: status, sch_id: x.id, index: x.index }
+        saveToLocalStorage("collection", collectionToRedirect)
+        this.setState({redirect: "/frontend/user/collection_page"})
+      });
+    }).catch(err => {console.log("Error"); console.log(err)})
+  }
+
+  convertToLocalTime = t => {
+    if (t == "") return ""
+    let h = parseInt(t.split(":")[0])
+    let m = parseInt(t.split(":")[1])
+    const totalMin = h * 60 + m - new Date().getTimezoneOffset()
+    h = parseInt(totalMin / 60) % 24
+    m = totalMin % 60
+    return ("0".concat(h.toString())).substr(-2) + ":" + ("0".concat(m.toString())).substr(-2)
   }
 
   render() {
@@ -188,17 +179,18 @@ class CollectionStatus extends Component {
                       {
                         this.state.filteredSchedules.map((x,i) => {
                           let start_time = '', due = '', collect = ''
-                          x.time_ranges.split("::").map((row, j) => {
-                            let times = row.split("/")
-                            start_time += (start_time != ''? '<br>': '') + '<span>' + times[0] + '</span>'
-                            due += (due != ''? '<br>': '') + '<span>' + times[1] + '</span>'
-                            collect += (collect != ''? '<br>': '') + '<span>' + times[2] + ' - ' + times[3] + '</span>'
-                          })
+                          let times = x.time_ranges.split("/")
+                          start_time = this.convertToLocalTime(times[0])
+                          due = this.convertToLocalTime(times[1])
+                          collect += this.convertToLocalTime(times[2]) + ' - ' + this.convertToLocalTime(times[3])
                           return (<tr>
                             <td>{x.collection_name}</td>
-                            <td dangerouslySetInnerHTML={{__html: start_time}} />
+                            <td>{start_time}</td>
+                            <td>{due}</td>
+                            <td>{collect}</td>
+                            {/* <td dangerouslySetInnerHTML={{__html: start_time}} />
                             <td dangerouslySetInnerHTML={{__html: due}} />
-                            <td dangerouslySetInnerHTML={{__html: collect}} />                            
+                            <td dangerouslySetInnerHTML={{__html: collect}} />                             */}
                             <td>
                             { x.status == "available" && <Button variant="success" fill wd mx_auto type="submit" onClick={() => this.gotoCollect(x)}>
                               Collect

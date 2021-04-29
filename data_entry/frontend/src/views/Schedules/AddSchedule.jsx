@@ -131,6 +131,7 @@ class AddCollection extends Component {
     // let field_names = [], field_types = []
 
     let time_ranges = []
+    let statuses = []
     inputList.map((x, i) => {
       if (x.start_time == null) {
         this.createNotification('error', 'Time is missing!', 'Please select start_time on line ' + String(i + 1))
@@ -153,6 +154,7 @@ class AddCollection extends Component {
         return
       }
       time_ranges.push(x.start_time + "/" + x.due + "/" + x.range_start + "/" + x.range_end)
+      statuses.push("available")
     })
     if (time_ranges.length == 0) return
     let form_data = new FormData();
@@ -161,6 +163,7 @@ class AddCollection extends Component {
     form_data.append('active', this.state.isActive? 1: 0);
     form_data.append('weekdays', weekdays.join(""));
     form_data.append('time_ranges', time_ranges.join("::"));
+    form_data.append('status', statuses.join("/"));
     let url = '/api/data_entry/schedule/';
     axios.post(url, form_data, {
         headers: {
