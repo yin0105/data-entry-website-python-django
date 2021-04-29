@@ -59,12 +59,11 @@ class CollectionStatus extends Component {
     let filteredSchedules = []
     this.state.schedules.map((schedule) => {
       // let isDisplay = false
-      let selectedTimeRange = ""
-      let status = schedule.status
-      let completedTime = "-"
+      
       
       schedule.active && schedule.weekdays[weekday - 1] == "1" && schedule.time_ranges.split("::").map((time_range, sub_sch_index) => {
         let sub_status = schedule.status.split("/")[sub_sch_index]
+        let completedTime = "-"
         if (sub_status == 'available') {
           const start_time = time_range.split("/")[0]
           let start_timer = 0
@@ -79,9 +78,7 @@ class CollectionStatus extends Component {
           //   const hour_min = due.split(":")
           //   due_timer = parseInt(hour_min[0], 10) * 3600 + parseInt(hour_min[1], 10) * 60
           // }
-          if (timer >= start_timer) { // && timer <= due_timer
-            selectedTimeRange = time_range
-          } else {
+          if (timer < start_timer) { // && timer <= due_timer
             sub_status = "upcoming"
           }
         } else if (sub_status != "in_progress") {
