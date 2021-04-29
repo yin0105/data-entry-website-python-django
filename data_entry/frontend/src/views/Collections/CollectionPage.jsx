@@ -266,27 +266,28 @@ class CollectionPage extends Component {
     
     let url = '/api/data_entry/collection/';   
     let resSave = 0 
+    const d = new Date()
+    const now = d.getUTCFullYear() + "-" + "0".concat((d.getUTCMonth() + 1)).substr(-2) + "-" + "0".concat(d.getUTCDate()).substr(-2) + " " + "0".concat(d.getUTCHours()).substr(-2) + ":" + "0".concat(d.getUTCMinutes()).substr(-2) + ":" + "0".concat(d.getUTCSeconds()).substr(-2)
+    
+    let form_data = new FormData();
+    form_data.append('name', this.collection.name);      
+    form_data.append('save_collected_data', 1);
 
+    let form_data_2 = new FormData();
+    form_data_2.append('id', this.collection.sch_id);
+    form_data_2.append('status', this.user.id + "::" + now);
+    form_data_2.append('index', this.collection.index);
+    
     if (this.state.events.length == 0) {
-      let form_data = new FormData();
-      form_data.append('name', this.collection.name);      
-      form_data.append('save_collected_data', 1);
       form_data.append('no_data', 1)
-      
       axios.post(url, form_data, {
         headers: {
             'Authorization': 'token ' + this.token,
         }
       }).then(res => {
         this.createNotification('success', 'The empty data has been saved successfully!', '')
-          
-        let form_data = new FormData();
         let url = '/api/data_entry/schedule/';
-        const d = new Date()
-        const now = d.getUTCFullYear() + "-" + "0".concat((d.getUTCMonth() + 1)).substr(-2) + "-" + "0".concat(d.getUTCDate()).substr(-2) + " " + "0".concat(d.getUTCHours()).substr(-2) + ":" + "0".concat(d.getUTCMinutes()).substr(-2) + ":" + "0".concat(d.getUTCSeconds()).substr(-2)
-        form_data.append('id', this.collection.sch_id);
-        form_data.append('status', this.user.id + "::" + now);
-        axios.put(url, form_data, {
+        axios.put(url, form_data_2, {
           headers: {
               'Authorization': 'token ' + this.token,
           }
@@ -301,9 +302,6 @@ class CollectionPage extends Component {
           resSave++
           return
         }
-        let form_data = new FormData();
-        form_data.append('name', this.collection.name);      
-        form_data.append('save_collected_data', 1);
         if (this.state.isAPI) {
           form_data.append('event_id', e.eventId);
         } else {
@@ -324,13 +322,8 @@ class CollectionPage extends Component {
             this.createNotification('success', 'The collected data has been saved successfully!', '')
             resSave++
             if (resSave == this.state.events.length) {
-              let form_data = new FormData();
               let url = '/api/data_entry/schedule/';
-              const d = new Date()
-              const now = d.getUTCFullYear() + "-" + "0".concat((d.getUTCMonth() + 1)).substr(-2) + "-" + "0".concat(d.getUTCDate()).substr(-2) + " " + "0".concat(d.getUTCHours()).substr(-2) + ":" + "0".concat(d.getUTCMinutes()).substr(-2) + ":" + "0".concat(d.getUTCSeconds()).substr(-2)
-              form_data.append('id', this.collection.sch_id);
-              form_data.append('status', this.user.id + "::" + now);
-              axios.put(url, form_data, {
+              axios.put(url, form_data_2, {
                 headers: {
                     'Authorization': 'token ' + this.token,
                 }
@@ -350,6 +343,7 @@ class CollectionPage extends Component {
       let url = '/api/data_entry/schedule/';
       form_data.append('id', this.collection.sch_id);
       form_data.append('status', 'available');
+      form_data.append('index', this.collection.index);
       axios.put(url, form_data, {
         headers: {
             'Authorization': 'token ' + this.token,
@@ -360,6 +354,16 @@ class CollectionPage extends Component {
     } else {
       this.setState({redirect: "/frontend/user/dashboard"})
     }
+  }
+
+  convertToLocalTime = t => {
+    if (t == "") return ""
+    let h = parseInt(t.split(":")[0])
+    let m = parseInt(t.split(":")[1])
+    const totalMin = h * 60 + m - new Date().getTimezoneOffset()
+    h = parseInt(totalMin / 60) % 24
+    m = totalMin % 60
+    return ("0".concat(h.toString())).substr(-2) + ":" + ("0".concat(m.toString())).substr(-2)
   }
 
   createNotification = (type, title, content) => {
@@ -399,7 +403,7 @@ class CollectionPage extends Component {
             <Row className="align-items-baseline">
                 <Col md={{ span: 4, offset: 1 }}>
                     <FormLabel>Collecting <b className="mx-4">{this.collection.name}</b></FormLabel>
-                    <FormLabel>{this.state.range_start} - {this.state.range_end}</FormLabel>
+                    <FormLabel>{this.convertToLocalTime(this.state.range_start)} - {this.convertToLocalTime(this.state.range_end)}</FormLabel>
                 </Col>
                 <Col md={{ span: 2 }}>
                     <FormControl type="text" onChange={e => this.handleSearchStringChange(e)} onKeyPress={this.handleSearchStringKeyPress}/>
@@ -458,7 +462,7 @@ class CollectionPage extends Component {
                                     return (
                                       <tr>
                                         <td><FormCheck type="checkbox" onClick={e => this.handleNoPickClick(e, i)}/></td>
-                                        <td><FormText>{e.gameTime}</FormText></td>
+                                        <td><FormText>{this.convertToLocalTime(e.gameTime)}</FormText></td>
                                         <td><FormText>{e.home.fullName}</FormText></td>
                                         <td><FormText>{e.away.fullName}</FormText></td>
                                         <td><FormText>{e.sportName}</FormText></td>

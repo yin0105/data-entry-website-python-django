@@ -43,8 +43,9 @@ class Schedule(models.Model):
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE, verbose_name='collection id', unique=True) 
     active = models.BooleanField(default=False)
     weekdays = models.CharField( max_length=30, verbose_name='weekdays')
-    time_ranges = models.TextField(max_length=1000, blank=True)
-    status = models.CharField( max_length=30, default='available')
+    time_ranges = models.TextField(blank=True)
+    status = models.TextField(blank=True)
+    # status = models.CharField( max_length=30, default='available')
 
     # Metadata
     class Meta:

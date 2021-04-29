@@ -238,11 +238,18 @@ class ScheduleView(APIView):
         ordinary_dict["status"] = instance.status
 
         req = request.data
+        print("req = ", req)
         if "collection" in req: ordinary_dict["collection"] = req["collection"]
         if "active" in req: ordinary_dict["active"] = req["active"]
         if "weekdays" in req: ordinary_dict["weekdays"] = req["weekdays"]
         if "time_ranges" in req: ordinary_dict["time_ranges"] = req["time_ranges"]
-        if "status" in req: ordinary_dict["status"] = req["status"]
+        if "status" in req: 
+            if "index" in req:
+                temp_statuses = ordinary_dict["status"].split("/")
+                temp_statuses[int(req["index"])] = req["status"]
+                ordinary_dict["status"] = "/".join(temp_statuses)
+            else:
+                ordinary_dict["status"] = req["status"]
 
         query_dict = QueryDict('', mutable=True)
         query_dict.update(ordinary_dict)
