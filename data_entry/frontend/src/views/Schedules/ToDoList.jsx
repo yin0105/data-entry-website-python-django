@@ -40,6 +40,7 @@ class CollectionStatus extends Component {
 
   componentDidMount() {    
     this.getSchedules()
+    console.log("Offset = ", process.env.OFFSET); 
   }
 
   getSchedules = () => {
@@ -180,9 +181,9 @@ class CollectionStatus extends Component {
                         this.state.filteredSchedules.map((x,i) => {
                           let start_time = '', due = '', collect = ''
                           let times = x.time_ranges.split("/")
-                          start_time = this.convertToLocalTime(times[0])
-                          due = this.convertToLocalTime(times[1])
-                          collect += this.convertToLocalTime(times[2]) + ' - ' + this.convertToLocalTime(times[3])
+                          start_time = times[0]
+                          due = times[1]
+                          collect += times[2] + ' - ' + times[3]
                           return (<tr>
                             <td>{x.collection_name}</td>
                             <td>{start_time}</td>

@@ -54,6 +54,8 @@ class APICacheView(APIView):
 
     def get(self, request, *args, **kwargs):
         query = request.GET["query"]
+        if "offset" in request.GET:
+            query += "?offset=" + request.GET["offset"]
         now = timezone.now()
         data = APICache.objects.filter(query = query)
         if not "force" in request.GET and len(data) > 0 and now - data[0].last_updated <= timedelta(minutes=cache_time):

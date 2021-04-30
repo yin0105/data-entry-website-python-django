@@ -123,7 +123,7 @@ class CollectionPage extends Component {
             return
           }
         })
-        const url = '/api/data_entry/api_cache/?query=sports/' + x + '/events/' + today + (force? '&force=1':'')
+        const url = '/api/data_entry/api_cache/?query=sports/' + x + '/events/' + today + '&offset=' + new Date().getTimezoneOffset() + (force? '&force=1':'')
         
         axios.get(url, {'headers': this.headers})
           .then(res => {
@@ -133,7 +133,7 @@ class CollectionPage extends Component {
               this.collection.field_types.split("::").map((x, i) => {
                 fields.push({name: this.collection.field_names.split("::")[i], type: x, value: ''})
               })
-              let eventDate = e.event_date.substr(11, 5)
+              let eventDate = this.convertToLocalTime(e.event_date.substr(11, 5))
               if (this.state.range_start != "" && eventDate < this.state.range_start) return
               if (this.state.range_end != "" && eventDate > this.state.range_end) return
               let eventRow = {
@@ -403,7 +403,7 @@ class CollectionPage extends Component {
             <Row className="align-items-baseline">
                 <Col md={{ span: 4, offset: 1 }}>
                     <FormLabel>Collecting <b className="mx-4">{this.collection.name}</b></FormLabel>
-                    <FormLabel>{this.convertToLocalTime(this.state.range_start)} - {this.convertToLocalTime(this.state.range_end)}</FormLabel>
+                    <FormLabel>{this.state.range_start} - {this.state.range_end}</FormLabel>
                 </Col>
                 <Col md={{ span: 2 }}>
                     <FormControl type="text" onChange={e => this.handleSearchStringChange(e)} onKeyPress={this.handleSearchStringKeyPress}/>
@@ -462,7 +462,7 @@ class CollectionPage extends Component {
                                     return (
                                       <tr>
                                         <td><FormCheck type="checkbox" onClick={e => this.handleNoPickClick(e, i)}/></td>
-                                        <td><FormText>{this.convertToLocalTime(e.gameTime)}</FormText></td>
+                                        <td><FormText>{e.gameTime}</FormText></td>
                                         <td><FormText>{e.home.fullName}</FormText></td>
                                         <td><FormText>{e.away.fullName}</FormText></td>
                                         <td><FormText>{e.sportName}</FormText></td>
