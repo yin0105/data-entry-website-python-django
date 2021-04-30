@@ -54,13 +54,13 @@ class CollectionStatus extends Component {
 
   filterToDoList = () => {
     const d = new Date();
-    let weekday = d.getUTCDay();
+    let weekday = d.getDay();
     weekday = weekday == 0? 7: weekday
-    const timer = d.getUTCHours() * 3600 + d.getUTCMinutes() * 60 + d.getUTCSeconds()
+    const timer = d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds()
     let filteredSchedules = []
     this.state.schedules.map((schedule) => {
       schedule.active && schedule.weekdays[weekday - 1] == "1" && schedule.time_ranges.split("::").map((time_range, sub_sch_index) => {
-        const sub_status = schedule.status.split("/")[sub_sch_index]
+        let sub_status = schedule.status.split("/")[sub_sch_index]
         if (sub_status == 'available' || sub_status.indexOf(this.user.id + "::") == 0) {
           const start_time = time_range.split("/")[0]
           let start_timer = 0
@@ -76,21 +76,16 @@ class CollectionStatus extends Component {
           //   due_timer = parseInt(hour_min[0], 10) * 3600 + parseInt(hour_min[1], 10) * 60
           // }
           // if (timer >= start_timer && timer <= due_timer) {
-          if (timer >= start_timer) {
-            let tmpSchedule = {...schedule}
-            tmpSchedule.time_ranges = time_range
-            tmpSchedule.status = sub_status
-            tmpSchedule.index = sub_sch_index
-            filteredSchedules.push(tmpSchedule)
+          if (timer < start_timer) {
+            sub_status = "none"
           }
+          let tmpSchedule = {...schedule}
+          tmpSchedule.time_ranges = time_range
+          tmpSchedule.status = sub_status
+          tmpSchedule.index = sub_sch_index
+          filteredSchedules.push(tmpSchedule)
         }
       })
-
-      // if (isDisplay) {
-      //   let tmpSchedule = {...schedule}
-      //   tmpSchedule.time_ranges = selectedTimeRange
-      //   filteredSchedules.push(tmpSchedule)
-      // }
     })
     this.setState({filteredSchedules})
   }
@@ -196,10 +191,10 @@ class CollectionStatus extends Component {
                             { x.status == "available" && <Button variant="success" fill wd mx_auto type="submit" onClick={() => this.gotoCollect(x)}>
                               Collect
                             </Button>}
-                            { x.status != "available" && <Button variant="warning" fill wd mx_auto type="submit" onClick={() => this.gotoCollect(x)}>
+                            { x.status != "none" && x.status != "available" && <Button variant="warning" fill wd mx_auto type="submit" onClick={() => this.gotoCollect(x)}>
                               Re-Run
-                            </Button>}
-                            
+                            </Button>} 
+                            { x.status == "none" && <span style={{ color: 'blue' }}>Upcoming ...</span>}                           
                             </td>
                           </tr>);
                         })}

@@ -53,9 +53,9 @@ class CollectionStatus extends Component {
 
   filterToDoList = () => {
     const d = new Date();
-    let weekday = d.getUTCDay();
+    let weekday = d.getDay();
     weekday = weekday == 0? 7: weekday
-    const timer = d.getUTCHours() * 3600 + d.getUTCMinutes() * 60 + d.getUTCSeconds()
+    const timer = d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds()
     let filteredSchedules = []
     this.state.schedules.map((schedule) => {
       // let isDisplay = false

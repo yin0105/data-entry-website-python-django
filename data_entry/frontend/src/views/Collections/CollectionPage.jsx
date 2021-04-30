@@ -113,7 +113,7 @@ class CollectionPage extends Component {
     } else {
       this.setState({isAPI: true})      
       const d = new Date();
-      let today = String(d.getUTCFullYear()) + "-" + String(d.getUTCMonth() + 1) + "-" + String(d.getUTCDate())
+      let today = String(d.getFullYear()) + "-" + String(d.getMonth() + 1) + "-" + String(d.getDate())
       this.collection.sports.split("::").map((x) => {
         let s_name = null
         this.sports_ids.map((s) => {
@@ -267,7 +267,7 @@ class CollectionPage extends Component {
     let url = '/api/data_entry/collection/';   
     let resSave = 0 
     const d = new Date()
-    const now = d.getUTCFullYear() + "-" + "0".concat((d.getUTCMonth() + 1)).substr(-2) + "-" + "0".concat(d.getUTCDate()).substr(-2) + " " + "0".concat(d.getUTCHours()).substr(-2) + ":" + "0".concat(d.getUTCMinutes()).substr(-2) + ":" + "0".concat(d.getUTCSeconds()).substr(-2)
+    const now = d.getFullYear() + "-" + "0".concat((d.getMonth() + 1)).substr(-2) + "-" + "0".concat(d.getDate()).substr(-2) + " " + "0".concat(d.getHours()).substr(-2) + ":" + "0".concat(d.getMinutes()).substr(-2) + ":" + "0".concat(d.getSeconds()).substr(-2)
     
     let form_data = new FormData();
     form_data.append('name', this.collection.name);      
