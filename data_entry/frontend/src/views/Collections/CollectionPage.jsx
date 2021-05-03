@@ -360,7 +360,12 @@ class CollectionPage extends Component {
     if (t == "") return ""
     let h = parseInt(t.split(":")[0])
     let m = parseInt(t.split(":")[1])
-    const totalMin = h * 60 + m - new Date().getTimezoneOffset()
+    let totalMin = h * 60 + m - new Date().getTimezoneOffset()
+    if (totalMin < 0) {
+      totalMin += 1440
+    } else if (totalMin > 1440) {
+      totalMin -= 1440
+    }
     h = parseInt(totalMin / 60) % 24
     m = totalMin % 60
     return ("0".concat(h.toString())).substr(-2) + ":" + ("0".concat(m.toString())).substr(-2)
